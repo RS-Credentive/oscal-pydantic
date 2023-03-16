@@ -1,0 +1,1 @@
+datamodel-codegen --use-annotated --use-title-as-name --input OSCAL/json/schema/oscal_complete_schema.json --output oscal_pydantic_models/complete.py
