@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: oscal-pydantic
-Version: 2023.3.16
+Version: 2023.3.21
 Summary: A set of Pydantic models generated from the OSCAL specification.
 Author-email: Robert Sherwood <robert.sherwood@credentive.com>
 Project-URL: Homepage, https://github.com/RS-Credentive/oscal-pydantic

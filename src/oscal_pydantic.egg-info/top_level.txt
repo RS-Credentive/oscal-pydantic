@@ -1,1 +1,2 @@
+oscal_dataclass
 oscal_pydantic
