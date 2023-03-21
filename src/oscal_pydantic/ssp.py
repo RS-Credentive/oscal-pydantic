@@ -8,16 +8,22 @@ from datetime import datetime
 from enum import Enum
 from typing import Annotated, List, Optional
 
-from pydantic import AnyUrl, BaseModel, EmailStr, Extra, Field
+from pydantic import AnyUrl, EmailStr, Extra, Field
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class BaseModel(PydanticBaseModel):
+    class Config:
+        allow_population_by_field_name = True
 
 
 class InformationTypeSystematizedIdentifier(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A human-oriented, globally unique identifier qualified by the given identification system used, such as NIST SP 800-60. This identifier has cross-instance scope and can be used to reference this system elsewhere in this or other OSCAL instances. This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^\\S(.*\\S)?$',
-            title='Information Type Systematized Identifier',
+            description="A human-oriented, globally unique identifier qualified by the given identification system used, such as NIST SP 800-60. This identifier has cross-instance scope and can be used to reference this system elsewhere in this or other OSCAL instances. This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^\\S(.*\\S)?$",
+            title="Information Type Systematized Identifier",
         ),
     ]
 
@@ -29,14 +35,14 @@ class InformationTypeCategorization(BaseModel):
     system: Annotated[
         AnyUrl,
         Field(
-            description='Specifies the information type identification system used.',
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Information Type Identification System',
+            description="Specifies the information type identification system used.",
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Information Type Identification System",
         ),
     ]
     information_type_ids: Annotated[
         Optional[List[InformationTypeSystematizedIdentifier]],
-        Field(alias='information-type-ids', min_items=1),
+        Field(alias="information-type-ids", min_items=1),
     ] = None
 
 
@@ -44,9 +50,9 @@ class BaseLevelConfidentialityIntegrityOrAvailability(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='The prescribed base (Confidentiality, Integrity, or Availability) security impact level.',
-            regex='^\\S(.*\\S)?$',
-            title='Base Level (Confidentiality, Integrity, or Availability)',
+            description="The prescribed base (Confidentiality, Integrity, or Availability) security impact level.",
+            regex="^\\S(.*\\S)?$",
+            title="Base Level (Confidentiality, Integrity, or Availability)",
         ),
     ]
 
@@ -55,9 +61,9 @@ class SelectedLevelConfidentialityIntegrityOrAvailability(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='The selected (Confidentiality, Integrity, or Availability) security impact level.',
-            regex='^\\S(.*\\S)?$',
-            title='Selected Level (Confidentiality, Integrity, or Availability)',
+            description="The selected (Confidentiality, Integrity, or Availability) security impact level.",
+            regex="^\\S(.*\\S)?$",
+            title="Selected Level (Confidentiality, Integrity, or Availability)",
         ),
     ]
 
@@ -66,8 +72,8 @@ class AdjustmentJustification(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='If the selected security level is different from the base security level, this contains the justification for the change.',
-            title='Adjustment Justification',
+            description="If the selected security level is different from the base security level, this contains the justification for the change.",
+            title="Adjustment Justification",
         ),
     ]
 
@@ -79,47 +85,47 @@ class SecurityImpactLevel(BaseModel):
     security_objective_confidentiality: Annotated[
         str,
         Field(
-            alias='security-objective-confidentiality',
-            description='A target-level of confidentiality for the system, based on the sensitivity of information within the system.',
-            regex='^\\S(.*\\S)?$',
-            title='Security Objective: Confidentiality',
+            alias="security-objective-confidentiality",
+            description="A target-level of confidentiality for the system, based on the sensitivity of information within the system.",
+            regex="^\\S(.*\\S)?$",
+            title="Security Objective: Confidentiality",
         ),
     ]
     security_objective_integrity: Annotated[
         str,
         Field(
-            alias='security-objective-integrity',
-            description='A target-level of integrity for the system, based on the sensitivity of information within the system.',
-            regex='^\\S(.*\\S)?$',
-            title='Security Objective: Integrity',
+            alias="security-objective-integrity",
+            description="A target-level of integrity for the system, based on the sensitivity of information within the system.",
+            regex="^\\S(.*\\S)?$",
+            title="Security Objective: Integrity",
         ),
     ]
     security_objective_availability: Annotated[
         str,
         Field(
-            alias='security-objective-availability',
-            description='A target-level of availability for the system, based on the sensitivity of information within the system.',
-            regex='^\\S(.*\\S)?$',
-            title='Security Objective: Availability',
+            alias="security-objective-availability",
+            description="A target-level of availability for the system, based on the sensitivity of information within the system.",
+            regex="^\\S(.*\\S)?$",
+            title="Security Objective: Availability",
         ),
     ]
 
 
 class State(Enum):
-    operational = 'operational'
-    under_development = 'under-development'
-    under_major_modification = 'under-major-modification'
-    disposition = 'disposition'
-    other = 'other'
+    operational = "operational"
+    under_development = "under-development"
+    under_major_modification = "under-major-modification"
+    disposition = "disposition"
+    other = "other"
 
 
 class SystemAuthorizationDate(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='The date the system received its authorization.',
-            regex='^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))(Z|[+-][0-9]{2}:[0-9]{2})?$',
-            title='System Authorization Date',
+            description="The date the system received its authorization.",
+            regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))(Z|[+-][0-9]{2}:[0-9]{2})?$",
+            title="System Authorization Date",
         ),
     ]
 
@@ -128,9 +134,9 @@ class LocationURL(BaseModel):
     __root__: Annotated[
         AnyUrl,
         Field(
-            description='The uniform resource locator (URL) for a web site or Internet presence associated with the location.',
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Location URL',
+            description="The uniform resource locator (URL) for a web site or Internet presence associated with the location.",
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Location URL",
         ),
     ]
 
@@ -139,16 +145,16 @@ class LocationReference(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A machine-oriented identifier reference to a location defined in the metadata section of this or another OSCAL instance. The UUID of the location in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Location Reference',
+            description="A machine-oriented identifier reference to a location defined in the metadata section of this or another OSCAL instance. The UUID of the location in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Location Reference",
         ),
     ]
 
 
 class PartyType(Enum):
-    person = 'person'
-    organization = 'organization'
+    person = "person"
+    organization = "organization"
 
 
 class PartyExternalIdentifier(BaseModel):
@@ -158,9 +164,9 @@ class PartyExternalIdentifier(BaseModel):
     scheme: Annotated[
         AnyUrl,
         Field(
-            description='Indicates the type of external identifier.',
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='External Identifier Schema',
+            description="Indicates the type of external identifier.",
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="External Identifier Schema",
         ),
     ]
     id: str
@@ -170,9 +176,9 @@ class OrganizationalAffiliation(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A machine-oriented identifier reference to another party (person or organization) that this subject is associated with. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Organizational Affiliation',
+            description="A machine-oriented identifier reference to another party (person or organization) that this subject is associated with. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Organizational Affiliation",
         ),
     ]
 
@@ -181,9 +187,9 @@ class PartyReference(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A machine-oriented identifier reference to another party defined in metadata. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Party Reference',
+            description="A machine-oriented identifier reference to another party defined in metadata. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Party Reference",
         ),
     ]
 
@@ -192,9 +198,9 @@ class RoleIdentifierReference(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A human-oriented identifier reference to roles served by the user.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Role Identifier Reference',
+            description="A human-oriented identifier reference to roles served by the user.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Role Identifier Reference",
         ),
     ]
 
@@ -206,17 +212,17 @@ class Base64(BaseModel):
     filename: Annotated[
         Optional[str],
         Field(
-            description='Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded.',
-            title='File Name',
+            description="Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded.",
+            title="File Name",
         ),
     ] = None
     media_type: Annotated[
         Optional[str],
         Field(
-            alias='media-type',
-            description='Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.',
-            regex='^\\S(.*\\S)?$',
-            title='Media Type',
+            alias="media-type",
+            description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
+            regex="^\\S(.*\\S)?$",
+            title="Media Type",
         ),
     ] = None
     value: str
@@ -229,32 +235,32 @@ class Link(BaseModel):
     href: Annotated[
         str,
         Field(
-            description='A resolvable URL reference to a resource.',
-            title='Hypertext Reference',
+            description="A resolvable URL reference to a resource.",
+            title="Hypertext Reference",
         ),
     ]
     rel: Annotated[
         Optional[str],
         Field(
             description="Describes the type of relationship provided by the link. This can be an indicator of the link's purpose.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Relation',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Relation",
         ),
     ] = None
     media_type: Annotated[
         Optional[str],
         Field(
-            alias='media-type',
-            description='Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.',
-            regex='^\\S(.*\\S)?$',
-            title='Media Type',
+            alias="media-type",
+            description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
+            regex="^\\S(.*\\S)?$",
+            title="Media Type",
         ),
     ] = None
     text: Annotated[
         Optional[str],
         Field(
-            description='A textual label to associate with the link, which may be used for presentation in a tool.',
-            title='Link Text',
+            description="A textual label to associate with the link, which may be used for presentation in a tool.",
+            title="Link Text",
         ),
     ] = None
 
@@ -266,9 +272,9 @@ class Hash(BaseModel):
     algorithm: Annotated[
         str,
         Field(
-            description='Method by which a hash is derived',
-            regex='^\\S(.*\\S)?$',
-            title='Hash algorithm',
+            description="Method by which a hash is derived",
+            regex="^\\S(.*\\S)?$",
+            title="Hash algorithm",
         ),
     ]
     value: str
@@ -278,8 +284,8 @@ class Remarks(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='Additional commentary on the containing object.',
-            title='Remarks',
+            description="Additional commentary on the containing object.",
+            title="Remarks",
         ),
     ]
 
@@ -288,9 +294,9 @@ class PublicationTimestamp(BaseModel):
     __root__: Annotated[
         datetime,
         Field(
-            description='The date and time the document was published. The date-time value must be formatted according to RFC 3339 with full time and time zone included.',
-            regex='^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$',
-            title='Publication Timestamp',
+            description="The date and time the document was published. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
+            # regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            title="Publication Timestamp",
         ),
     ]
 
@@ -299,9 +305,9 @@ class LastModifiedTimestamp(BaseModel):
     __root__: Annotated[
         datetime,
         Field(
-            description='The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.',
-            regex='^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$',
-            title='Last Modified Timestamp',
+            description="The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
+            # regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            title="Last Modified Timestamp",
         ),
     ]
 
@@ -310,9 +316,9 @@ class DocumentVersion(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A string used to distinguish the current version of the document from other previous (and future) versions.',
-            regex='^\\S(.*\\S)?$',
-            title='Document Version',
+            description="A string used to distinguish the current version of the document from other previous (and future) versions.",
+            regex="^\\S(.*\\S)?$",
+            title="Document Version",
         ),
     ]
 
@@ -321,9 +327,9 @@ class OSCALVersion(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='The OSCAL model version the document was authored against.',
-            regex='^\\S(.*\\S)?$',
-            title='OSCAL version',
+            description="The OSCAL model version the document was authored against.",
+            regex="^\\S(.*\\S)?$",
+            title="OSCAL version",
         ),
     ]
 
@@ -332,9 +338,9 @@ class EmailAddress(BaseModel):
     __root__: Annotated[
         EmailStr,
         Field(
-            description='An email address as defined by RFC 5322 Section 3.4.1.',
-            regex='^.+@.+$',
-            title='Email Address',
+            description="An email address as defined by RFC 5322 Section 3.4.1.",
+            # regex="^.+@.+$",
+            title="Email Address",
         ),
     ]
 
@@ -346,9 +352,9 @@ class TelephoneNumber(BaseModel):
     type: Annotated[
         Optional[str],
         Field(
-            description='Indicates the type of phone number.',
-            regex='^\\S(.*\\S)?$',
-            title='type flag',
+            description="Indicates the type of phone number.",
+            regex="^\\S(.*\\S)?$",
+            title="type flag",
         ),
     ] = None
     number: str
@@ -358,9 +364,9 @@ class AddressLine(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A single line of an address.',
-            regex='^\\S(.*\\S)?$',
-            title='Address line',
+            description="A single line of an address.",
+            regex="^\\S(.*\\S)?$",
+            title="Address line",
         ),
     ]
 
@@ -372,34 +378,32 @@ class DocumentIdentifier(BaseModel):
     scheme: Annotated[
         Optional[AnyUrl],
         Field(
-            description='Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters.',
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Document Identification Scheme',
+            description="Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters.",
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Document Identification Scheme",
         ),
     ] = None
     identifier: str
 
 
 class State1(Enum):
-    under_development = 'under-development'
-    operational = 'operational'
-    disposition = 'disposition'
-    other = 'other'
+    under_development = "under-development"
+    operational = "operational"
+    disposition = "disposition"
+    other = "other"
 
 
 class Status1(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    state: Annotated[
-        State1, Field(description='The operational status.', title='State')
-    ]
+    state: Annotated[State1, Field(description="The operational status.", title="State")]
     remarks: Optional[Remarks] = None
 
 
 class Transport(Enum):
-    TCP = 'TCP'
-    UDP = 'UDP'
+    TCP = "TCP"
+    UDP = "UDP"
 
 
 class PortRange(BaseModel):
@@ -409,24 +413,24 @@ class PortRange(BaseModel):
     start: Annotated[
         Optional[int],
         Field(
-            description='Indicates the starting port number in a port range',
+            description="Indicates the starting port number in a port range",
             ge=0,
             multiple_of=1.0,
-            title='Start',
+            title="Start",
         ),
     ] = None
     end: Annotated[
         Optional[int],
         Field(
-            description='Indicates the ending port number in a port range',
+            description="Indicates the ending port number in a port range",
             ge=0,
             multiple_of=1.0,
-            title='End',
+            title="End",
         ),
     ] = None
     transport: Annotated[
         Optional[Transport],
-        Field(description='Indicates the transport type.', title='Transport'),
+        Field(description="Indicates the transport type.", title="Transport"),
     ] = None
 
 
@@ -437,9 +441,9 @@ class ImplementationStatus(BaseModel):
     state: Annotated[
         str,
         Field(
-            description='Identifies the implementation status of the control or control objective.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Implementation State',
+            description="Identifies the implementation status of the control or control objective.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Implementation State",
         ),
     ]
     remarks: Optional[Remarks] = None
@@ -449,9 +453,9 @@ class FunctionsPerformed(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='Describes a function performed for a given authorized privilege by this user class.',
-            regex='^\\S(.*\\S)?$',
-            title='Functions Performed',
+            description="Describes a function performed for a given authorized privilege by this user class.",
+            regex="^\\S(.*\\S)?$",
+            title="Functions Performed",
         ),
     ]
 
@@ -460,9 +464,9 @@ class ParameterValue(BaseModel):
     __root__: Annotated[
         str,
         Field(
-            description='A parameter value or set of values.',
-            regex='^\\S(.*\\S)?$',
-            title='Parameter Value',
+            description="A parameter value or set of values.",
+            regex="^\\S(.*\\S)?$",
+            title="Parameter Value",
         ),
     ]
 
@@ -474,10 +478,10 @@ class SetParameterValue(BaseModel):
     param_id: Annotated[
         str,
         Field(
-            alias='param-id',
+            alias="param-id",
             description="A human-oriented reference to a parameter within a control, who's catalog has been imported into the current implementation context.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Parameter ID',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Parameter ID",
         ),
     ]
     values: Annotated[List[ParameterValue], Field(min_items=1)]
@@ -491,10 +495,10 @@ class SystemIdentification(BaseModel):
     identifier_type: Annotated[
         Optional[AnyUrl],
         Field(
-            alias='identifier-type',
-            description='Identifies the identification system from which the provided identifier was assigned.',
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Identification System Type',
+            alias="identifier-type",
+            description="Identifies the identification system from which the provided identifier was assigned.",
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Identification System Type",
         ),
     ] = None
     id: str
@@ -507,9 +511,9 @@ class ConstraintTest(BaseModel):
     expression: Annotated[
         str,
         Field(
-            description='A formal (executable) expression of a constraint',
-            regex='^\\S(.*\\S)?$',
-            title='Constraint test',
+            description="A formal (executable) expression of a constraint",
+            regex="^\\S(.*\\S)?$",
+            title="Constraint test",
         ),
     ]
     remarks: Optional[Remarks] = None
@@ -522,8 +526,8 @@ class Constraint(BaseModel):
     description: Annotated[
         Optional[str],
         Field(
-            description='A textual summary of the constraint to be applied.',
-            title='Constraint Description',
+            description="A textual summary of the constraint to be applied.",
+            title="Constraint Description",
         ),
     ] = None
     tests: Annotated[Optional[List[ConstraintTest]], Field(min_items=1)] = None
@@ -536,15 +540,15 @@ class Guideline(BaseModel):
     prose: Annotated[
         str,
         Field(
-            description='Prose permits multiple paragraphs, lists, tables etc.',
-            title='Guideline Text',
+            description="Prose permits multiple paragraphs, lists, tables etc.",
+            title="Guideline Text",
         ),
     ]
 
 
 class ParameterCardinality(Enum):
-    one = 'one'
-    one_or_more = 'one-or-more'
+    one = "one"
+    one_or_more = "one-or-more"
 
 
 class Selection(BaseModel):
@@ -554,9 +558,9 @@ class Selection(BaseModel):
     how_many: Annotated[
         Optional[ParameterCardinality],
         Field(
-            alias='how-many',
-            description='Describes the number of selections that must occur. Without this setting, only one value should be assumed to be permitted.',
-            title='Parameter Cardinality',
+            alias="how-many",
+            description="Describes the number of selections that must occur. Without this setting, only one value should be assumed to be permitted.",
+            title="Parameter Cardinality",
         ),
     ] = None
     choice: Annotated[Optional[List[str]], Field(min_items=1)] = None
@@ -577,7 +581,7 @@ class ImportProfile(BaseModel):
         str,
         Field(
             description="A resolvable URL reference to the profile or catalog to use as the system's control baseline.",
-            title='Profile Reference',
+            title="Profile Reference",
         ),
     ]
     remarks: Optional[Remarks] = None
@@ -587,9 +591,7 @@ class Status(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    state: Annotated[
-        State, Field(description='The current operating status.', title='State')
-    ]
+    state: Annotated[State, Field(description="The current operating status.", title="State")]
     remarks: Optional[Remarks] = None
 
 
@@ -600,17 +602,17 @@ class ResourceLink(BaseModel):
     href: Annotated[
         str,
         Field(
-            description='A resolvable URI reference to a resource.',
-            title='Hypertext Reference',
+            description="A resolvable URI reference to a resource.",
+            title="Hypertext Reference",
         ),
     ]
     media_type: Annotated[
         Optional[str],
         Field(
-            alias='media-type',
-            description='Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.',
-            regex='^\\S(.*\\S)?$',
-            title='Media Type',
+            alias="media-type",
+            description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
+            regex="^\\S(.*\\S)?$",
+            title="Media Type",
         ),
     ] = None
     hashes: Annotated[Optional[List[Hash]], Field(min_items=1)] = None
@@ -624,41 +626,41 @@ class Property(BaseModel):
         str,
         Field(
             description="A textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Property Name',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Property Name",
         ),
     ]
     uuid: Annotated[
         Optional[str],
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined property elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Property Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined property elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Property Universally Unique Identifier",
         ),
     ] = None
     ns: Annotated[
         Optional[AnyUrl],
         Field(
             description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name.",
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Property Namespace',
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Property Namespace",
         ),
     ] = None
     value: Annotated[
         str,
         Field(
-            description='Indicates the value of the attribute, characteristic, or quality.',
-            regex='^\\S(.*\\S)?$',
-            title='Property Value',
+            description="Indicates the value of the attribute, characteristic, or quality.",
+            regex="^\\S(.*\\S)?$",
+            title="Property Value",
         ),
     ]
     class_: Annotated[
         Optional[str],
         Field(
-            alias='class',
+            alias="class",
             description="A textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Property Class',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Property Class",
         ),
     ] = None
     remarks: Optional[Remarks] = None
@@ -671,15 +673,13 @@ class ResponsibleParty(BaseModel):
     role_id: Annotated[
         str,
         Field(
-            alias='role-id',
-            description='A human-oriented identifier reference to roles served by the user.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Responsible Role',
+            alias="role-id",
+            description="A human-oriented identifier reference to roles served by the user.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Responsible Role",
         ),
     ]
-    party_uuids: Annotated[
-        List[PartyReference], Field(alias='party-uuids', min_items=1)
-    ]
+    party_uuids: Annotated[List[PartyReference], Field(alias="party-uuids", min_items=1)]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     remarks: Optional[Remarks] = None
@@ -692,16 +692,16 @@ class ResponsibleRole(BaseModel):
     role_id: Annotated[
         str,
         Field(
-            alias='role-id',
-            description='A human-oriented identifier reference to roles responsible for the business function.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Responsible Role ID',
+            alias="role-id",
+            description="A human-oriented identifier reference to roles responsible for the business function.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Responsible Role ID",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     party_uuids: Annotated[
-        Optional[List[PartyReference]], Field(alias='party-uuids', min_items=1)
+        Optional[List[PartyReference]], Field(alias="party-uuids", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -713,45 +713,45 @@ class Address(BaseModel):
     type: Annotated[
         Optional[str],
         Field(
-            description='Indicates the type of address.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Address Type',
+            description="Indicates the type of address.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Address Type",
         ),
     ] = None
     addr_lines: Annotated[
-        Optional[List[AddressLine]], Field(alias='addr-lines', min_items=1)
+        Optional[List[AddressLine]], Field(alias="addr-lines", min_items=1)
     ] = None
     city: Annotated[
         Optional[str],
         Field(
-            description='City, town or geographical region for the mailing address.',
-            regex='^\\S(.*\\S)?$',
-            title='City',
+            description="City, town or geographical region for the mailing address.",
+            regex="^\\S(.*\\S)?$",
+            title="City",
         ),
     ] = None
     state: Annotated[
         Optional[str],
         Field(
-            description='State, province or analogous geographical region for mailing address',
-            regex='^\\S(.*\\S)?$',
-            title='State',
+            description="State, province or analogous geographical region for mailing address",
+            regex="^\\S(.*\\S)?$",
+            title="State",
         ),
     ] = None
     postal_code: Annotated[
         Optional[str],
         Field(
-            alias='postal-code',
-            description='Postal or ZIP code for mailing address',
-            regex='^\\S(.*\\S)?$',
-            title='Postal Code',
+            alias="postal-code",
+            description="Postal or ZIP code for mailing address",
+            regex="^\\S(.*\\S)?$",
+            title="Postal Code",
         ),
     ] = None
     country: Annotated[
         Optional[str],
         Field(
-            description='The ISO 3166-1 alpha-2 country code for the mailing address.',
-            regex='^\\S(.*\\S)?$',
-            title='Country Code',
+            description="The ISO 3166-1 alpha-2 country code for the mailing address.",
+            regex="^\\S(.*\\S)?$",
+            title="Country Code",
         ),
     ] = None
 
@@ -763,28 +763,28 @@ class ServiceProtocolInformation(BaseModel):
     uuid: Annotated[
         Optional[str],
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this service protocol information elsewhere in this or other OSCAL instances. The locally defined UUID of the service protocol can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Service Protocol Information Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this service protocol information elsewhere in this or other OSCAL instances. The locally defined UUID of the service protocol can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Service Protocol Information Universally Unique Identifier",
         ),
     ] = None
     name: Annotated[
         str,
         Field(
             description='The common name of the protocol, which should be the appropriate "service name" from the IANA Service Name and Transport Protocol Port Number Registry.',
-            regex='^\\S(.*\\S)?$',
-            title='Protocol Name',
+            regex="^\\S(.*\\S)?$",
+            title="Protocol Name",
         ),
     ]
     title: Annotated[
         Optional[str],
         Field(
-            description='A human readable name for the protocol (e.g., Transport Layer Security).',
-            title='Protocol Title',
+            description="A human readable name for the protocol (e.g., Transport Layer Security).",
+            title="Protocol Title",
         ),
     ] = None
     port_ranges: Annotated[
-        Optional[List[PortRange]], Field(alias='port-ranges', min_items=1)
+        Optional[List[PortRange]], Field(alias="port-ranges", min_items=1)
     ] = None
 
 
@@ -795,19 +795,19 @@ class Privilege(BaseModel):
     title: Annotated[
         str,
         Field(
-            description='A human readable name for the privilege.',
-            title='Privilege Title',
+            description="A human readable name for the privilege.",
+            title="Privilege Title",
         ),
     ]
     description: Annotated[
         Optional[str],
         Field(
             description="A summary of the privilege's purpose within the system.",
-            title='Privilege Description',
+            title="Privilege Description",
         ),
     ] = None
     functions_performed: Annotated[
-        List[FunctionsPerformed], Field(alias='functions-performed', min_items=1)
+        List[FunctionsPerformed], Field(alias="functions-performed", min_items=1)
     ]
 
 
@@ -818,17 +818,17 @@ class ImplementedComponent(BaseModel):
     component_uuid: Annotated[
         str,
         Field(
-            alias='component-uuid',
-            description='A machine-oriented identifier reference to a component that is implemented as part of an inventory item.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Component Universally Unique Identifier Reference',
+            alias="component-uuid",
+            description="A machine-oriented identifier reference to a component that is implemented as part of an inventory item.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Component Universally Unique Identifier Reference",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_parties: Annotated[
         Optional[List[ResponsibleParty]],
-        Field(alias='responsible-parties', min_items=1),
+        Field(alias="responsible-parties", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -840,27 +840,27 @@ class InventoryItem(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this inventory item elsewhere in this or other OSCAL instances. The locally defined UUID of the inventory item can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Inventory Item Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this inventory item elsewhere in this or other OSCAL instances. The locally defined UUID of the inventory item can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Inventory Item Universally Unique Identifier",
         ),
     ]
     description: Annotated[
         str,
         Field(
-            description='A summary of the inventory item stating its purpose within the system.',
-            title='Inventory Item Description',
+            description="A summary of the inventory item stating its purpose within the system.",
+            title="Inventory Item Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_parties: Annotated[
         Optional[List[ResponsibleParty]],
-        Field(alias='responsible-parties', min_items=1),
+        Field(alias="responsible-parties", min_items=1),
     ] = None
     implemented_components: Annotated[
         Optional[List[ImplementedComponent]],
-        Field(alias='implemented-components', min_items=1),
+        Field(alias="implemented-components", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -872,49 +872,49 @@ class Part(BaseModel):
     id: Annotated[
         Optional[str],
         Field(
-            description='A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined part elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Part Identifier',
+            description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined part elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Part Identifier",
         ),
     ] = None
     name: Annotated[
         str,
         Field(
             description="A textual label that uniquely identifies the part's semantic type.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Part Name',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Part Name",
         ),
     ]
     ns: Annotated[
         Optional[AnyUrl],
         Field(
             description="A namespace qualifying the part's name. This allows different organizations to associate distinct semantics with the same name.",
-            regex='^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$',
-            title='Part Namespace',
+            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            title="Part Namespace",
         ),
     ] = None
     class_: Annotated[
         Optional[str],
         Field(
-            alias='class',
+            alias="class",
             description="A textual label that provides a sub-type or characterization of the part's name. This can be used to further distinguish or discriminate between the semantics of multiple parts of the same control with the same name and ns.",
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Part Class',
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Part Class",
         ),
     ] = None
     title: Annotated[
         Optional[str],
         Field(
-            description='A name given to the part, which may be used by a tool for display and navigation.',
-            title='Part Title',
+            description="A name given to the part, which may be used by a tool for display and navigation.",
+            title="Part Title",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     prose: Annotated[
         Optional[str],
         Field(
-            description='Permits multiple paragraphs, lists, tables etc.',
-            title='Part Text',
+            description="Permits multiple paragraphs, lists, tables etc.",
+            title="Part Text",
         ),
     ] = None
     parts: Optional[List[Part]] = None
@@ -928,27 +928,27 @@ class Parameter(BaseModel):
     id: Annotated[
         str,
         Field(
-            description='A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Parameter Identifier',
+            description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Parameter Identifier",
         ),
     ]
     class_: Annotated[
         Optional[str],
         Field(
-            alias='class',
-            description='A textual label that provides a characterization of the parameter.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Parameter Class',
+            alias="class",
+            description="A textual label that provides a characterization of the parameter.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Parameter Class",
         ),
     ] = None
     depends_on: Annotated[
         Optional[str],
         Field(
-            alias='depends-on',
-            description='**(deprecated)** Another parameter invoking this one. This construct has been deprecated and should not be used.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Depends on',
+            alias="depends-on",
+            description="**(deprecated)** Another parameter invoking this one. This construct has been deprecated and should not be used.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Depends on",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -956,15 +956,15 @@ class Parameter(BaseModel):
     label: Annotated[
         Optional[str],
         Field(
-            description='A short, placeholder name for the parameter, which can be used as a substitute for a value if no value is assigned.',
-            title='Parameter Label',
+            description="A short, placeholder name for the parameter, which can be used as a substitute for a value if no value is assigned.",
+            title="Parameter Label",
         ),
     ] = None
     usage: Annotated[
         Optional[str],
         Field(
-            description='Describes the purpose and use of a parameter',
-            title='Parameter Usage Description',
+            description="Describes the purpose and use of a parameter",
+            title="Parameter Usage Description",
         ),
     ] = None
     constraints: Annotated[Optional[List[Constraint]], Field(min_items=1)] = None
@@ -983,7 +983,7 @@ class ConfidentialityImpactLevel(BaseModel):
     base: BaseLevelConfidentialityIntegrityOrAvailability
     selected: Optional[SelectedLevelConfidentialityIntegrityOrAvailability] = None
     adjustment_justification: Annotated[
-        Optional[AdjustmentJustification], Field(alias='adjustment-justification')
+        Optional[AdjustmentJustification], Field(alias="adjustment-justification")
     ] = None
 
 
@@ -996,7 +996,7 @@ class IntegrityImpactLevel(BaseModel):
     base: BaseLevelConfidentialityIntegrityOrAvailability
     selected: Optional[SelectedLevelConfidentialityIntegrityOrAvailability] = None
     adjustment_justification: Annotated[
-        Optional[AdjustmentJustification], Field(alias='adjustment-justification')
+        Optional[AdjustmentJustification], Field(alias="adjustment-justification")
     ] = None
 
 
@@ -1009,7 +1009,7 @@ class AvailabilityImpactLevel(BaseModel):
     base: BaseLevelConfidentialityIntegrityOrAvailability
     selected: Optional[SelectedLevelConfidentialityIntegrityOrAvailability] = None
     adjustment_justification: Annotated[
-        Optional[AdjustmentJustification], Field(alias='adjustment-justification')
+        Optional[AdjustmentJustification], Field(alias="adjustment-justification")
     ] = None
 
 
@@ -1020,23 +1020,23 @@ class InformationType(BaseModel):
     uuid: Annotated[
         Optional[str],
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this information type elsewhere in this or other OSCAL instances. The locally defined UUID of the information type can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Information Type Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this information type elsewhere in this or other OSCAL instances. The locally defined UUID of the information type can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Information Type Universally Unique Identifier",
         ),
     ] = None
     title: Annotated[
         str,
         Field(
-            description='A human readable name for the information type. This title should be meaningful within the context of the system.',
-            title='title field',
+            description="A human readable name for the information type. This title should be meaningful within the context of the system.",
+            title="title field",
         ),
     ]
     description: Annotated[
         str,
         Field(
-            description='A summary of how this information type is used within the system.',
-            title='Information Type Description',
+            description="A summary of how this information type is used within the system.",
+            title="Information Type Description",
         ),
     ]
     categorizations: Annotated[
@@ -1047,25 +1047,25 @@ class InformationType(BaseModel):
     confidentiality_impact: Annotated[
         ConfidentialityImpactLevel,
         Field(
-            alias='confidentiality-impact',
-            description='The expected level of impact resulting from the unauthorized disclosure of the described information.',
-            title='Confidentiality Impact Level',
+            alias="confidentiality-impact",
+            description="The expected level of impact resulting from the unauthorized disclosure of the described information.",
+            title="Confidentiality Impact Level",
         ),
     ]
     integrity_impact: Annotated[
         IntegrityImpactLevel,
         Field(
-            alias='integrity-impact',
-            description='The expected level of impact resulting from the unauthorized modification of the described information.',
-            title='Integrity Impact Level',
+            alias="integrity-impact",
+            description="The expected level of impact resulting from the unauthorized modification of the described information.",
+            title="Integrity Impact Level",
         ),
     ]
     availability_impact: Annotated[
         AvailabilityImpactLevel,
         Field(
-            alias='availability-impact',
-            description='The expected level of impact resulting from the disruption of access to or use of the described information or the information system.',
-            title='Availability Impact Level',
+            alias="availability-impact",
+            description="The expected level of impact resulting from the disruption of access to or use of the described information or the information system.",
+            title="Availability Impact Level",
         ),
     ]
 
@@ -1077,7 +1077,7 @@ class SystemInformation(BaseModel):
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     information_types: Annotated[
-        List[InformationType], Field(alias='information-types', min_items=1)
+        List[InformationType], Field(alias="information-types", min_items=1)
     ]
 
 
@@ -1088,20 +1088,20 @@ class Diagram(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this diagram elsewhere in this or other OSCAL instances. The locally defined UUID of the diagram can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Diagram ID',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this diagram elsewhere in this or other OSCAL instances. The locally defined UUID of the diagram can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Diagram ID",
         ),
     ]
     description: Annotated[
         Optional[str],
-        Field(description='A summary of the diagram.', title='Diagram Description'),
+        Field(description="A summary of the diagram.", title="Diagram Description"),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     caption: Annotated[
         Optional[str],
-        Field(description='A brief caption to annotate the diagram.', title='Caption'),
+        Field(description="A brief caption to annotate the diagram.", title="Caption"),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1114,7 +1114,7 @@ class NetworkArchitecture(BaseModel):
         str,
         Field(
             description="A summary of the system's network architecture.",
-            title='Network Architecture Description',
+            title="Network Architecture Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1131,7 +1131,7 @@ class DataFlow(BaseModel):
         str,
         Field(
             description="A summary of the system's data flow.",
-            title='Data Flow Description',
+            title="Data Flow Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1147,16 +1147,16 @@ class LeveragedAuthorization(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope and can be used to reference this leveraged authorization elsewhere in this or other OSCAL instances. The locally defined UUID of the leveraged authorization can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Leveraged Authorization Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope and can be used to reference this leveraged authorization elsewhere in this or other OSCAL instances. The locally defined UUID of the leveraged authorization can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Leveraged Authorization Universally Unique Identifier",
         ),
     ]
     title: Annotated[
         str,
         Field(
-            description='A human readable name for the leveraged authorization in the context of the system.',
-            title='title field',
+            description="A human readable name for the leveraged authorization in the context of the system.",
+            title="title field",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1164,13 +1164,13 @@ class LeveragedAuthorization(BaseModel):
     party_uuid: Annotated[
         str,
         Field(
-            alias='party-uuid',
-            description='A machine-oriented identifier reference to the party that manages the leveraged system.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='party-uuid field',
+            alias="party-uuid",
+            description="A machine-oriented identifier reference to the party that manages the leveraged system.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="party-uuid field",
         ),
     ]
-    date_authorized: Annotated[SystemAuthorizationDate, Field(alias='date-authorized')]
+    date_authorized: Annotated[SystemAuthorizationDate, Field(alias="date-authorized")]
     remarks: Optional[Remarks] = None
 
 
@@ -1181,22 +1181,22 @@ class ProvidedControlImplementation(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this provided entry elsewhere in this or other OSCAL instances. The locally defined UUID of the provided entry can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Provided Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this provided entry elsewhere in this or other OSCAL instances. The locally defined UUID of the provided entry can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Provided Universally Unique Identifier",
         ),
     ]
     description: Annotated[
         str,
         Field(
-            description='An implementation statement that describes the aspects of the control or control statement implementation that can be provided to another system leveraging this system.',
-            title='Provided Control Implementation Description',
+            description="An implementation statement that describes the aspects of the control or control statement implementation that can be provided to another system leveraging this system.",
+            title="Provided Control Implementation Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1208,31 +1208,31 @@ class ControlImplementationResponsibility(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this responsibility elsewhere in this or other OSCAL instances. The locally defined UUID of the responsibility can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Responsibility Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this responsibility elsewhere in this or other OSCAL instances. The locally defined UUID of the responsibility can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Responsibility Universally Unique Identifier",
         ),
     ]
     provided_uuid: Annotated[
         Optional[str],
         Field(
-            alias='provided-uuid',
-            description='A machine-oriented identifier reference to an inherited control implementation that a leveraging system is inheriting from a leveraged system.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Provided UUID',
+            alias="provided-uuid",
+            description="A machine-oriented identifier reference to an inherited control implementation that a leveraging system is inheriting from a leveraged system.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Provided UUID",
         ),
     ] = None
     description: Annotated[
         str,
         Field(
-            description='An implementation statement that describes the aspects of the control or control statement implementation that a leveraging system must implement to satisfy the control provided by a leveraged system.',
-            title='Control Implementation Responsibility Description',
+            description="An implementation statement that describes the aspects of the control or control statement implementation that a leveraging system must implement to satisfy the control provided by a leveraged system.",
+            title="Control Implementation Responsibility Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1244,15 +1244,13 @@ class Export(BaseModel):
     description: Annotated[
         Optional[str],
         Field(
-            description='An implementation statement that describes the aspects of the control or control statement implementation that can be available to another system leveraging this system.',
-            title='Control Implementation Export Description',
+            description="An implementation statement that describes the aspects of the control or control statement implementation that can be available to another system leveraging this system.",
+            title="Control Implementation Export Description",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
-    provided: Annotated[
-        Optional[List[ProvidedControlImplementation]], Field(min_items=1)
-    ] = None
+    provided: Annotated[Optional[List[ProvidedControlImplementation]], Field(min_items=1)] = None
     responsibilities: Annotated[
         Optional[List[ControlImplementationResponsibility]], Field(min_items=1)
     ] = None
@@ -1266,31 +1264,31 @@ class InheritedControlImplementation(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this inherited entry elsewhere in this or other OSCAL instances. The locally defined UUID of the inherited control implementation can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Inherited Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this inherited entry elsewhere in this or other OSCAL instances. The locally defined UUID of the inherited control implementation can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Inherited Universally Unique Identifier",
         ),
     ]
     provided_uuid: Annotated[
         Optional[str],
         Field(
-            alias='provided-uuid',
-            description='A machine-oriented identifier reference to an inherited control implementation that a leveraging system is inheriting from a leveraged system.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Provided UUID',
+            alias="provided-uuid",
+            description="A machine-oriented identifier reference to an inherited control implementation that a leveraging system is inheriting from a leveraged system.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Provided UUID",
         ),
     ] = None
     description: Annotated[
         str,
         Field(
-            description='An implementation statement that describes the aspects of a control or control statement implementation that a leveraging system is inheriting from a leveraged system.',
-            title='Inherited Control Implementation Description',
+            description="An implementation statement that describes the aspects of a control or control statement implementation that a leveraging system is inheriting from a leveraged system.",
+            title="Inherited Control Implementation Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
 
 
@@ -1301,31 +1299,31 @@ class SatisfiedControlImplementationResponsibility(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this satisfied control implementation entry elsewhere in this or other OSCAL instances. The locally defined UUID of the control implementation can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Satisfied Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this satisfied control implementation entry elsewhere in this or other OSCAL instances. The locally defined UUID of the control implementation can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Satisfied Universally Unique Identifier",
         ),
     ]
     responsibility_uuid: Annotated[
         Optional[str],
         Field(
-            alias='responsibility-uuid',
-            description='A machine-oriented identifier reference to a control implementation that satisfies a responsibility imposed by a leveraged system.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Responsibility UUID',
+            alias="responsibility-uuid",
+            description="A machine-oriented identifier reference to a control implementation that satisfies a responsibility imposed by a leveraged system.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Responsibility UUID",
         ),
     ] = None
     description: Annotated[
         str,
         Field(
-            description='An implementation statement that describes the aspects of a control or control statement implementation that a leveraging system is implementing based on a requirement from a leveraged system.',
-            title='Satisfied Control Implementation Responsibility Description',
+            description="An implementation statement that describes the aspects of a control or control statement implementation that a leveraging system is implementing based on a requirement from a leveraged system.",
+            title="Satisfied Control Implementation Responsibility Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1337,50 +1335,48 @@ class ComponentControlImplementation(BaseModel):
     component_uuid: Annotated[
         str,
         Field(
-            alias='component-uuid',
-            description='A machine-oriented identifier reference to the component that is implemeting a given control.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Component Universally Unique Identifier Reference',
+            alias="component-uuid",
+            description="A machine-oriented identifier reference to the component that is implemeting a given control.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Component Universally Unique Identifier Reference",
         ),
     ]
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this by-component entry elsewhere in this or other OSCAL instances. The locally defined UUID of the by-component entry can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='By-Component Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this by-component entry elsewhere in this or other OSCAL instances. The locally defined UUID of the by-component entry can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="By-Component Universally Unique Identifier",
         ),
     ]
     description: Annotated[
         str,
         Field(
-            description='An implementation statement that describes how a control or a control statement is implemented within the referenced system component.',
-            title='Control Implementation Description',
+            description="An implementation statement that describes how a control or a control statement is implemented within the referenced system component.",
+            title="Control Implementation Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     set_parameters: Annotated[
-        Optional[List[SetParameterValue]], Field(alias='set-parameters', min_items=1)
+        Optional[List[SetParameterValue]], Field(alias="set-parameters", min_items=1)
     ] = None
     implementation_status: Annotated[
-        Optional[ImplementationStatus], Field(alias='implementation-status')
+        Optional[ImplementationStatus], Field(alias="implementation-status")
     ] = None
     export: Annotated[
         Optional[Export],
         Field(
-            description='Identifies content intended for external consumption, such as with leveraged organizations.',
-            title='Export',
+            description="Identifies content intended for external consumption, such as with leveraged organizations.",
+            title="Export",
         ),
     ] = None
-    inherited: Annotated[
-        Optional[List[InheritedControlImplementation]], Field(min_items=1)
-    ] = None
+    inherited: Annotated[Optional[List[InheritedControlImplementation]], Field(min_items=1)] = None
     satisfied: Annotated[
         Optional[List[SatisfiedControlImplementationResponsibility]], Field(min_items=1)
     ] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1392,18 +1388,14 @@ class RevisionHistoryEntry(BaseModel):
     title: Annotated[
         Optional[str],
         Field(
-            description='A name given to the document revision, which may be used by a tool for display and navigation.',
-            title='Document Title',
+            description="A name given to the document revision, which may be used by a tool for display and navigation.",
+            title="Document Title",
         ),
     ] = None
     published: Optional[PublicationTimestamp] = None
-    last_modified: Annotated[
-        Optional[LastModifiedTimestamp], Field(alias='last-modified')
-    ] = None
+    last_modified: Annotated[Optional[LastModifiedTimestamp], Field(alias="last-modified")] = None
     version: DocumentVersion
-    oscal_version: Annotated[
-        Optional[OSCALVersion], Field(alias='oscal-version')
-    ] = None
+    oscal_version: Annotated[Optional[OSCALVersion], Field(alias="oscal-version")] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     remarks: Optional[Remarks] = None
@@ -1416,24 +1408,24 @@ class Location(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined location elsewhere in this or other OSCAL instances. The locally defined UUID of the location can be used to reference the data item locally or globally (e.g., from an importing OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Location Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined location elsewhere in this or other OSCAL instances. The locally defined UUID of the location can be used to reference the data item locally or globally (e.g., from an importing OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Location Universally Unique Identifier",
         ),
     ]
     title: Annotated[
         Optional[str],
         Field(
-            description='A name given to the location, which may be used by a tool for display and navigation.',
-            title='Location Title',
+            description="A name given to the location, which may be used by a tool for display and navigation.",
+            title="Location Title",
         ),
     ] = None
     address: Address
     email_addresses: Annotated[
-        Optional[List[EmailAddress]], Field(alias='email-addresses', min_items=1)
+        Optional[List[EmailAddress]], Field(alias="email-addresses", min_items=1)
     ] = None
     telephone_numbers: Annotated[
-        Optional[List[TelephoneNumber]], Field(alias='telephone-numbers', min_items=1)
+        Optional[List[TelephoneNumber]], Field(alias="telephone-numbers", min_items=1)
     ] = None
     urls: Annotated[Optional[List[LocationURL]], Field(min_items=1)] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1448,54 +1440,54 @@ class PartyOrganizationOrPerson(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined party elsewhere in this or other OSCAL instances. The locally defined UUID of the party can be used to reference the data item locally or globally (e.g., from an importing OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Party Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined party elsewhere in this or other OSCAL instances. The locally defined UUID of the party can be used to reference the data item locally or globally (e.g., from an importing OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Party Universally Unique Identifier",
         ),
     ]
     type: Annotated[
         PartyType,
         Field(
-            description='A category describing the kind of party the object describes.',
-            title='Party Type',
+            description="A category describing the kind of party the object describes.",
+            title="Party Type",
         ),
     ]
     name: Annotated[
         Optional[str],
         Field(
-            description='The full name of the party. This is typically the legal name associated with the party.',
-            regex='^\\S(.*\\S)?$',
-            title='Party Name',
+            description="The full name of the party. This is typically the legal name associated with the party.",
+            regex="^\\S(.*\\S)?$",
+            title="Party Name",
         ),
     ] = None
     short_name: Annotated[
         Optional[str],
         Field(
-            alias='short-name',
-            description='A short common name, abbreviation, or acronym for the party.',
-            regex='^\\S(.*\\S)?$',
-            title='Party Short Name',
+            alias="short-name",
+            description="A short common name, abbreviation, or acronym for the party.",
+            regex="^\\S(.*\\S)?$",
+            title="Party Short Name",
         ),
     ] = None
     external_ids: Annotated[
         Optional[List[PartyExternalIdentifier]],
-        Field(alias='external-ids', min_items=1),
+        Field(alias="external-ids", min_items=1),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     email_addresses: Annotated[
-        Optional[List[EmailAddress]], Field(alias='email-addresses', min_items=1)
+        Optional[List[EmailAddress]], Field(alias="email-addresses", min_items=1)
     ] = None
     telephone_numbers: Annotated[
-        Optional[List[TelephoneNumber]], Field(alias='telephone-numbers', min_items=1)
+        Optional[List[TelephoneNumber]], Field(alias="telephone-numbers", min_items=1)
     ] = None
     addresses: Annotated[Optional[List[Address]], Field(min_items=1)] = None
     location_uuids: Annotated[
-        Optional[List[LocationReference]], Field(alias='location-uuids', min_items=1)
+        Optional[List[LocationReference]], Field(alias="location-uuids", min_items=1)
     ] = None
     member_of_organizations: Annotated[
         Optional[List[OrganizationalAffiliation]],
-        Field(alias='member-of-organizations', min_items=1),
+        Field(alias="member-of-organizations", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1507,32 +1499,32 @@ class Role(BaseModel):
     id: Annotated[
         str,
         Field(
-            description='A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined role elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, the locally defined ID of the Role from the imported OSCAL instance must be referenced in the context of the containing resource (e.g., import, import-component-definition, import-profile, import-ssp or import-ap). This ID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Role Identifier',
+            description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined role elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, the locally defined ID of the Role from the imported OSCAL instance must be referenced in the context of the containing resource (e.g., import, import-component-definition, import-profile, import-ssp or import-ap). This ID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Role Identifier",
         ),
     ]
     title: Annotated[
         str,
         Field(
-            description='A name given to the role, which may be used by a tool for display and navigation.',
-            title='Role Title',
+            description="A name given to the role, which may be used by a tool for display and navigation.",
+            title="Role Title",
         ),
     ]
     short_name: Annotated[
         Optional[str],
         Field(
-            alias='short-name',
-            description='A short common name, abbreviation, or acronym for the role.',
-            regex='^\\S(.*\\S)?$',
-            title='Role Short Name',
+            alias="short-name",
+            description="A short common name, abbreviation, or acronym for the role.",
+            regex="^\\S(.*\\S)?$",
+            title="Role Short Name",
         ),
     ] = None
     description: Annotated[
         Optional[str],
         Field(
             description="A summary of the role's purpose and associated responsibilities.",
-            title='Role Description',
+            title="Role Description",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1544,9 +1536,7 @@ class Citation(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    text: Annotated[
-        str, Field(description='A line of citation text.', title='Citation Text')
-    ]
+    text: Annotated[str, Field(description="A line of citation text.", title="Citation Text")]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
 
@@ -1558,42 +1548,42 @@ class Resource(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined resource elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Resource Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined resource elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Resource Universally Unique Identifier",
         ),
     ]
     title: Annotated[
         Optional[str],
         Field(
-            description='A name given to the resource, which may be used by a tool for display and navigation.',
-            title='Resource Title',
+            description="A name given to the resource, which may be used by a tool for display and navigation.",
+            title="Resource Title",
         ),
     ] = None
     description: Annotated[
         Optional[str],
         Field(
-            description='A short summary of the resource used to indicate the purpose of the resource.',
-            title='Resource Description',
+            description="A short summary of the resource used to indicate the purpose of the resource.",
+            title="Resource Description",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     document_ids: Annotated[
-        Optional[List[DocumentIdentifier]], Field(alias='document-ids', min_items=1)
+        Optional[List[DocumentIdentifier]], Field(alias="document-ids", min_items=1)
     ] = None
     citation: Annotated[
         Optional[Citation],
         Field(
-            description='A citation consisting of end note text and optional structured bibliographic data.',
-            title='Citation',
+            description="A citation consisting of end note text and optional structured bibliographic data.",
+            title="Citation",
         ),
     ] = None
     rlinks: Annotated[Optional[List[ResourceLink]], Field(min_items=1)] = None
     base64: Annotated[
         Optional[Base64],
         Field(
-            description='The Base64 alphabet in RFC 2045 - aligned with XSD.',
-            title='Base64',
+            description="The Base64 alphabet in RFC 2045 - aligned with XSD.",
+            title="Base64",
         ),
     ] = None
     remarks: Optional[Remarks] = None
@@ -1613,38 +1603,38 @@ class Component(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this component elsewhere in this or other OSCAL instances. The locally defined UUID of the component can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Component Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this component elsewhere in this or other OSCAL instances. The locally defined UUID of the component can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Component Identifier",
         ),
     ]
     type: Annotated[
         str,
         Field(
-            description='A category describing the purpose of the component.',
-            regex='^\\S(.*\\S)?$',
-            title='Component Type',
+            description="A category describing the purpose of the component.",
+            regex="^\\S(.*\\S)?$",
+            title="Component Type",
         ),
     ]
     title: Annotated[
         str,
         Field(
-            description='A human readable name for the system component.',
-            title='Component Title',
+            description="A human readable name for the system component.",
+            title="Component Title",
         ),
     ]
     description: Annotated[
         str,
         Field(
-            description='A description of the component, including information about its function.',
-            title='Component Description',
+            description="A description of the component, including information about its function.",
+            title="Component Description",
         ),
     ]
     purpose: Annotated[
         Optional[str],
         Field(
-            description='A summary of the technological or business purpose of the component.',
-            title='Purpose',
+            description="A summary of the technological or business purpose of the component.",
+            title="Purpose",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1652,16 +1642,14 @@ class Component(BaseModel):
     status: Annotated[
         Status1,
         Field(
-            description='Describes the operational status of the system component.',
-            title='Status',
+            description="Describes the operational status of the system component.",
+            title="Status",
         ),
     ]
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
-    protocols: Annotated[
-        Optional[List[ServiceProtocolInformation]], Field(min_items=1)
-    ] = None
+    protocols: Annotated[Optional[List[ServiceProtocolInformation]], Field(min_items=1)] = None
     remarks: Optional[Remarks] = None
 
 
@@ -1672,41 +1660,41 @@ class SystemUser(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this user class elsewhere in this or other OSCAL instances. The locally defined UUID of the system user can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='User Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this user class elsewhere in this or other OSCAL instances. The locally defined UUID of the system user can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="User Universally Unique Identifier",
         ),
     ]
     title: Annotated[
         Optional[str],
         Field(
-            description='A name given to the user, which may be used by a tool for display and navigation.',
-            title='User Title',
+            description="A name given to the user, which may be used by a tool for display and navigation.",
+            title="User Title",
         ),
     ] = None
     short_name: Annotated[
         Optional[str],
         Field(
-            alias='short-name',
-            description='A short common name, abbreviation, or acronym for the user.',
-            regex='^\\S(.*\\S)?$',
-            title='User Short Name',
+            alias="short-name",
+            description="A short common name, abbreviation, or acronym for the user.",
+            regex="^\\S(.*\\S)?$",
+            title="User Short Name",
         ),
     ] = None
     description: Annotated[
         Optional[str],
         Field(
             description="A summary of the user's purpose within the system.",
-            title='User Description',
+            title="User Description",
         ),
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     role_ids: Annotated[
-        Optional[List[RoleIdentifierReference]], Field(alias='role-ids', min_items=1)
+        Optional[List[RoleIdentifierReference]], Field(alias="role-ids", min_items=1)
     ] = None
     authorized_privileges: Annotated[
-        Optional[List[Privilege]], Field(alias='authorized-privileges', min_items=1)
+        Optional[List[Privilege]], Field(alias="authorized-privileges", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1719,7 +1707,7 @@ class AuthorizationBoundary(BaseModel):
         str,
         Field(
             description="A summary of the system's authorization boundary.",
-            title='Authorization Boundary Description',
+            title="Authorization Boundary Description",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
@@ -1736,12 +1724,12 @@ class SystemImplementation(BaseModel):
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     leveraged_authorizations: Annotated[
         Optional[List[LeveragedAuthorization]],
-        Field(alias='leveraged-authorizations', min_items=1),
+        Field(alias="leveraged-authorizations", min_items=1),
     ] = None
     users: Annotated[List[SystemUser], Field(min_items=1)]
     components: Annotated[List[Component], Field(min_items=1)]
     inventory_items: Annotated[
-        Optional[List[InventoryItem]], Field(alias='inventory-items', min_items=1)
+        Optional[List[InventoryItem]], Field(alias="inventory-items", min_items=1)
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1753,28 +1741,28 @@ class SpecificControlStatement(BaseModel):
     statement_id: Annotated[
         str,
         Field(
-            alias='statement-id',
-            description='A human-oriented identifier reference to a control statement.',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Control Statement Reference',
+            alias="statement-id",
+            description="A human-oriented identifier reference to a control statement.",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Control Statement Reference",
         ),
     ]
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this control statement elsewhere in this or other OSCAL instances. The UUID of the control statement in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Control Statement Reference Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this control statement elsewhere in this or other OSCAL instances. The UUID of the control statement in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Control Statement Reference Universally Unique Identifier",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
     by_components: Annotated[
         Optional[List[ComponentControlImplementation]],
-        Field(alias='by-components', min_items=1),
+        Field(alias="by-components", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1786,30 +1774,26 @@ class PublicationMetadata(BaseModel):
     title: Annotated[
         str,
         Field(
-            description='A name given to the document, which may be used by a tool for display and navigation.',
-            title='Document Title',
+            description="A name given to the document, which may be used by a tool for display and navigation.",
+            title="Document Title",
         ),
     ]
     published: Optional[PublicationTimestamp] = None
-    last_modified: Annotated[LastModifiedTimestamp, Field(alias='last-modified')]
+    last_modified: Annotated[LastModifiedTimestamp, Field(alias="last-modified")]
     version: DocumentVersion
-    oscal_version: Annotated[OSCALVersion, Field(alias='oscal-version')]
-    revisions: Annotated[
-        Optional[List[RevisionHistoryEntry]], Field(min_items=1)
-    ] = None
+    oscal_version: Annotated[OSCALVersion, Field(alias="oscal-version")]
+    revisions: Annotated[Optional[List[RevisionHistoryEntry]], Field(min_items=1)] = None
     document_ids: Annotated[
-        Optional[List[DocumentIdentifier]], Field(alias='document-ids', min_items=1)
+        Optional[List[DocumentIdentifier]], Field(alias="document-ids", min_items=1)
     ] = None
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     roles: Annotated[Optional[List[Role]], Field(min_items=1)] = None
     locations: Annotated[Optional[List[Location]], Field(min_items=1)] = None
-    parties: Annotated[
-        Optional[List[PartyOrganizationOrPerson]], Field(min_items=1)
-    ] = None
+    parties: Annotated[Optional[List[PartyOrganizationOrPerson]], Field(min_items=1)] = None
     responsible_parties: Annotated[
         Optional[List[ResponsibleParty]],
-        Field(alias='responsible-parties', min_items=1),
+        Field(alias="responsible-parties", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1818,59 +1802,53 @@ class SystemCharacteristics(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    system_ids: Annotated[
-        List[SystemIdentification], Field(alias='system-ids', min_items=1)
-    ]
+    system_ids: Annotated[List[SystemIdentification], Field(alias="system-ids", min_items=1)]
     system_name: Annotated[
         str,
         Field(
-            alias='system-name',
-            description='The full name of the system.',
-            regex='^\\S(.*\\S)?$',
-            title='System Name - Full',
+            alias="system-name",
+            description="The full name of the system.",
+            regex="^\\S(.*\\S)?$",
+            title="System Name - Full",
         ),
     ]
     system_name_short: Annotated[
         Optional[str],
         Field(
-            alias='system-name-short',
-            description='A short name for the system, such as an acronym, that is suitable for display in a data table or summary list.',
-            regex='^\\S(.*\\S)?$',
-            title='System Name - Short',
+            alias="system-name-short",
+            description="A short name for the system, such as an acronym, that is suitable for display in a data table or summary list.",
+            regex="^\\S(.*\\S)?$",
+            title="System Name - Short",
         ),
     ] = None
     description: Annotated[
-        str, Field(description='A summary of the system.', title='System Description')
+        str, Field(description="A summary of the system.", title="System Description")
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     date_authorized: Annotated[
-        Optional[SystemAuthorizationDate], Field(alias='date-authorized')
+        Optional[SystemAuthorizationDate], Field(alias="date-authorized")
     ] = None
     security_sensitivity_level: Annotated[
         str,
         Field(
-            alias='security-sensitivity-level',
-            description='The overall information system sensitivity categorization, such as defined by FIPS-199.',
-            regex='^\\S(.*\\S)?$',
-            title='Security Sensitivity Level',
+            alias="security-sensitivity-level",
+            description="The overall information system sensitivity categorization, such as defined by FIPS-199.",
+            regex="^\\S(.*\\S)?$",
+            title="Security Sensitivity Level",
         ),
     ]
-    system_information: Annotated[SystemInformation, Field(alias='system-information')]
-    security_impact_level: Annotated[
-        SecurityImpactLevel, Field(alias='security-impact-level')
-    ]
+    system_information: Annotated[SystemInformation, Field(alias="system-information")]
+    security_impact_level: Annotated[SecurityImpactLevel, Field(alias="security-impact-level")]
     status: Status
-    authorization_boundary: Annotated[
-        AuthorizationBoundary, Field(alias='authorization-boundary')
-    ]
+    authorization_boundary: Annotated[AuthorizationBoundary, Field(alias="authorization-boundary")]
     network_architecture: Annotated[
-        Optional[NetworkArchitecture], Field(alias='network-architecture')
+        Optional[NetworkArchitecture], Field(alias="network-architecture")
     ] = None
-    data_flow: Annotated[Optional[DataFlow], Field(alias='data-flow')] = None
+    data_flow: Annotated[Optional[DataFlow], Field(alias="data-flow")] = None
     responsible_parties: Annotated[
         Optional[List[ResponsibleParty]],
-        Field(alias='responsible-parties', min_items=1),
+        Field(alias="responsible-parties", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1882,34 +1860,32 @@ class ControlBasedRequirement(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this control requirement elsewhere in this or other OSCAL instances. The locally defined UUID of the control requirement can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='Control Requirement Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this control requirement elsewhere in this or other OSCAL instances. The locally defined UUID of the control requirement can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance). This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="Control Requirement Universally Unique Identifier",
         ),
     ]
     control_id: Annotated[
         str,
         Field(
-            alias='control-id',
-            description='A human-oriented identifier reference to a control with a corresponding id value. When referencing an externally defined control, the Control Identifier Reference must be used in the context of the external / imported OSCAL instance (e.g., uri-reference).',
-            regex='^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$',
-            title='Control Identifier Reference',
+            alias="control-id",
+            description="A human-oriented identifier reference to a control with a corresponding id value. When referencing an externally defined control, the Control Identifier Reference must be used in the context of the external / imported OSCAL instance (e.g., uri-reference).",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
+            title="Control Identifier Reference",
         ),
     ]
     props: Annotated[Optional[List[Property]], Field(min_items=1)] = None
     links: Annotated[Optional[List[Link]], Field(min_items=1)] = None
     set_parameters: Annotated[
-        Optional[List[SetParameterValue]], Field(alias='set-parameters', min_items=1)
+        Optional[List[SetParameterValue]], Field(alias="set-parameters", min_items=1)
     ] = None
     responsible_roles: Annotated[
-        Optional[List[ResponsibleRole]], Field(alias='responsible-roles', min_items=1)
+        Optional[List[ResponsibleRole]], Field(alias="responsible-roles", min_items=1)
     ] = None
-    statements: Annotated[
-        Optional[List[SpecificControlStatement]], Field(min_items=1)
-    ] = None
+    statements: Annotated[Optional[List[SpecificControlStatement]], Field(min_items=1)] = None
     by_components: Annotated[
         Optional[List[ComponentControlImplementation]],
-        Field(alias='by-components', min_items=1),
+        Field(alias="by-components", min_items=1),
     ] = None
     remarks: Optional[Remarks] = None
 
@@ -1921,16 +1897,16 @@ class ControlImplementation(BaseModel):
     description: Annotated[
         str,
         Field(
-            description='A statement describing important things to know about how this set of control satisfaction documentation is approached.',
-            title='Control Implementation Description',
+            description="A statement describing important things to know about how this set of control satisfaction documentation is approached.",
+            title="Control Implementation Description",
         ),
     ]
     set_parameters: Annotated[
-        Optional[List[SetParameterValue]], Field(alias='set-parameters', min_items=1)
+        Optional[List[SetParameterValue]], Field(alias="set-parameters", min_items=1)
     ] = None
     implemented_requirements: Annotated[
         List[ControlBasedRequirement],
-        Field(alias='implemented-requirements', min_items=1),
+        Field(alias="implemented-requirements", min_items=1),
     ]
 
 
@@ -1941,32 +1917,24 @@ class SystemSecurityPlanSSP(BaseModel):
     uuid: Annotated[
         str,
         Field(
-            description='A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this system security plan (SSP) elsewhere in this or other OSCAL instances. The locally defined UUID of the SSP can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance).This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.',
-            regex='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$',
-            title='System Security Plan Universally Unique Identifier',
+            description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this system security plan (SSP) elsewhere in this or other OSCAL instances. The locally defined UUID of the SSP can be used to reference the data item locally or globally (e.g., in an imported OSCAL instance).This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
+            regex="^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[45][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$",
+            title="System Security Plan Universally Unique Identifier",
         ),
     ]
     metadata: PublicationMetadata
-    import_profile: Annotated[ImportProfile, Field(alias='import-profile')]
-    system_characteristics: Annotated[
-        SystemCharacteristics, Field(alias='system-characteristics')
-    ]
-    system_implementation: Annotated[
-        SystemImplementation, Field(alias='system-implementation')
-    ]
-    control_implementation: Annotated[
-        ControlImplementation, Field(alias='control-implementation')
-    ]
-    back_matter: Annotated[Optional[BackMatter], Field(alias='back-matter')] = None
+    import_profile: Annotated[ImportProfile, Field(alias="import-profile")]
+    system_characteristics: Annotated[SystemCharacteristics, Field(alias="system-characteristics")]
+    system_implementation: Annotated[SystemImplementation, Field(alias="system-implementation")]
+    control_implementation: Annotated[ControlImplementation, Field(alias="control-implementation")]
+    back_matter: Annotated[Optional[BackMatter], Field(alias="back-matter")] = None
 
 
 class Model(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    system_security_plan: Annotated[
-        SystemSecurityPlanSSP, Field(alias='system-security-plan')
-    ]
+    system_security_plan: Annotated[SystemSecurityPlanSSP, Field(alias="system-security-plan")]
 
 
 Part.update_forward_refs()

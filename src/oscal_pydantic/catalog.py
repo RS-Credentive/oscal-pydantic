@@ -8,7 +8,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Annotated, List, Optional
 
-from pydantic import AnyUrl, BaseModel, EmailStr, Extra, Field
+from pydantic import AnyUrl, EmailStr, Extra, Field
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class BaseModel(PydanticBaseModel):
+    class Config:
+        allow_population_by_field_name = True
 
 
 class Guideline(BaseModel):
@@ -67,7 +73,7 @@ class LocationURL(BaseModel):
         AnyUrl,
         Field(
             description="The uniform resource locator (URL) for a web site or Internet presence associated with the location.",
-            regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            # #regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
             title="Location URL",
         ),
     ]
@@ -97,7 +103,7 @@ class PartyExternalIdentifier(BaseModel):
         AnyUrl,
         Field(
             description="Indicates the type of external identifier.",
-            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            # #regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
             title="External Identifier Schema",
         ),
     ]
@@ -131,7 +137,7 @@ class RoleIdentifierReference(BaseModel):
         str,
         Field(
             description="A human-oriented identifier reference to roles served by the user.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Role Identifier Reference",
         ),
     ]
@@ -175,7 +181,7 @@ class Link(BaseModel):
         Optional[str],
         Field(
             description="Describes the type of relationship provided by the link. This can be an indicator of the link's purpose.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Relation",
         ),
     ] = None
@@ -227,7 +233,7 @@ class PublicationTimestamp(BaseModel):
         datetime,
         Field(
             description="The date and time the document was published. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
-            regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            # #regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
             title="Publication Timestamp",
         ),
     ]
@@ -238,7 +244,7 @@ class LastModifiedTimestamp(BaseModel):
         datetime,
         Field(
             description="The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
-            regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            # #regex="^((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30))T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
             title="Last Modified Timestamp",
         ),
     ]
@@ -271,7 +277,7 @@ class EmailAddress(BaseModel):
         EmailStr,
         Field(
             description="An email address as defined by RFC 5322 Section 3.4.1.",
-            regex="^.+@.+$",
+            # #regex="^.+@.+$",
             title="Email Address",
         ),
     ]
@@ -311,7 +317,7 @@ class DocumentIdentifier(BaseModel):
         Optional[AnyUrl],
         Field(
             description="Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters.",
-            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            # #regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
             title="Document Identification Scheme",
         ),
     ] = None
@@ -378,7 +384,7 @@ class Property(BaseModel):
         str,
         Field(
             description="A textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Property Name",
         ),
     ]
@@ -394,7 +400,7 @@ class Property(BaseModel):
         Optional[AnyUrl],
         Field(
             description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name.",
-            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            # #regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
             title="Property Namespace",
         ),
     ] = None
@@ -411,7 +417,7 @@ class Property(BaseModel):
         Field(
             alias="class",
             description="A textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Property Class",
         ),
     ] = None
@@ -427,7 +433,7 @@ class ResponsibleParty(BaseModel):
         Field(
             alias="role-id",
             description="A human-oriented identifier reference to roles served by the user.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Responsible Role",
         ),
     ]
@@ -446,7 +452,7 @@ class ResponsibleRole(BaseModel):
         Field(
             alias="role-id",
             description="A human-oriented identifier reference to roles responsible for the business function.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Responsible Role ID",
         ),
     ]
@@ -466,7 +472,7 @@ class Address(BaseModel):
         Optional[str],
         Field(
             description="Indicates the type of address.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Address Type",
         ),
     ] = None
@@ -516,7 +522,7 @@ class Part(BaseModel):
         Optional[str],
         Field(
             description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined part elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Part Identifier",
         ),
     ] = None
@@ -524,7 +530,7 @@ class Part(BaseModel):
         str,
         Field(
             description="A textual label that uniquely identifies the part's semantic type.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Part Name",
         ),
     ]
@@ -532,7 +538,7 @@ class Part(BaseModel):
         Optional[AnyUrl],
         Field(
             description="A namespace qualifying the part's name. This allows different organizations to associate distinct semantics with the same name.",
-            # regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
+            # #regex="^[a-zA-Z][a-zA-Z0-9+\\-.]+:.+$",
             title="Part Namespace",
         ),
     ] = None
@@ -541,7 +547,7 @@ class Part(BaseModel):
         Field(
             alias="class",
             description="A textual label that provides a sub-type or characterization of the part's name. This can be used to further distinguish or discriminate between the semantics of multiple parts of the same control with the same name and ns.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Part Class",
         ),
     ] = None
@@ -572,7 +578,7 @@ class Parameter(BaseModel):
         str,
         Field(
             description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Parameter Identifier",
         ),
     ]
@@ -581,7 +587,7 @@ class Parameter(BaseModel):
         Field(
             alias="class",
             description="A textual label that provides a characterization of the parameter.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Parameter Class",
         ),
     ] = None
@@ -590,7 +596,7 @@ class Parameter(BaseModel):
         Field(
             alias="depends-on",
             description="**(deprecated)** Another parameter invoking this one. This construct has been deprecated and should not be used.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Depends on",
         ),
     ] = None
@@ -736,7 +742,7 @@ class Role(BaseModel):
         str,
         Field(
             description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined role elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, the locally defined ID of the Role from the imported OSCAL instance must be referenced in the context of the containing resource (e.g., import, import-component-definition, import-profile, import-ssp or import-ap). This ID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Role Identifier",
         ),
     ]
@@ -840,7 +846,7 @@ class Control(BaseModel):
         str,
         Field(
             description="A human-oriented, locally unique identifier with instance scope that can be used to reference this control elsewhere in this and other OSCAL instances (e.g., profiles). This id should be assigned per-subject, which means it should be consistently used to identify the same control across revisions of the document.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Control Identifier",
         ),
     ]
@@ -849,7 +855,7 @@ class Control(BaseModel):
         Field(
             alias="class",
             description="A textual label that provides a sub-type or characterization of the control.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Control Class",
         ),
     ] = None
@@ -906,7 +912,7 @@ class ControlGroup(BaseModel):
         Optional[str],
         Field(
             description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined group elsewhere in in this and other OSCAL instances (e.g., profiles). This id should be assigned per-subject, which means it should be consistently used to identify the same group across revisions of the document.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Group Identifier",
         ),
     ] = None
@@ -915,7 +921,7 @@ class ControlGroup(BaseModel):
         Field(
             alias="class",
             description="A textual label that provides a sub-type or characterization of the group.",
-            regex="^(\\p{L}|_)(\\p{L}|\\p{N}|[.\\-_])*$",
+            regex="^(\\w|_)(\\w|\\d|[.\\--_])*$",
             title="Group Class",
         ),
     ] = None
