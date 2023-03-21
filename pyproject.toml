@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oscal-pydantic"
-version = "2023.3.16"
+version = "2023.3.21"
 description = "A set of Pydantic models generated from the OSCAL specification."
 readme = "README.md"
 authors = [
@@ -19,7 +19,7 @@ requires-python = ">=3.7"
 Homepage = "https://github.com/RS-Credentive/oscal-pydantic"
 
 [tool.bumpver]
-current_version = "2023.3.16"
+current_version = "2023.3.21"
 version_pattern = "YYYY.MM.DD"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = true
