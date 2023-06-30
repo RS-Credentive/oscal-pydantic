@@ -4,7 +4,15 @@ from __future__ import annotations
 from typing import Annotated
 from enum import Enum
 import uuid
-from pydantic import BaseModel, RootModel, Field, AwareDatetime, constr, AnyUrl, EmailStr
+from pydantic import (
+    BaseModel,
+    RootModel,
+    Field,
+    AwareDatetime,
+    constr,
+    AnyUrl,
+    EmailStr,
+)
 
 
 class MarkupLine(RootModel[str]):
@@ -66,6 +74,7 @@ class Name(RootModel[Token]):
 
 
 class UUID(RootModel[uuid.UUID]):
+    # TODO: Should there be a class that will auto generate a UUID (like this one), and a separate class that can only reference an existing UUID? (see location-uuid)
     root: uuid.UUID = Field(
         description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined property elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
         default=uuid.uuid4(),
@@ -91,7 +100,9 @@ class PropertyClass(RootModel[Token]):
 
 
 class Group(RootModel[Token]):
-    root: Token = Field(description="An identifier for relating distinct sets of properties.")
+    root: Token = Field(
+        description="An identifier for relating distinct sets of properties."
+    )
 
 
 class Remarks(RootModel[str]):
@@ -163,10 +174,12 @@ class Role(BaseModel):
         description="A name given to the role, which may be used by a tool for display and navigation."
     )
     short_name: str | None = Field(
-        default=None, description="A short common name, abbreviation, or acronym for the role."
+        default=None,
+        description="A short common name, abbreviation, or acronym for the role.",
     )
     description: MarkupMultiline | None = Field(
-        default=None, description="A summary of the role's purpose and associated responsibilities."
+        default=None,
+        description="A summary of the role's purpose and associated responsibilities.",
     )
     props: list[Property] | None = Field(
         default=None,
@@ -180,19 +193,26 @@ class Role(BaseModel):
 
 
 class Address(BaseModel):
-    type: Token | None = Field(default=None, description="Indicates the type of address.")
+    type: Token | None = Field(
+        default=None, description="Indicates the type of address."
+    )
     addr_lines: list[str] | None = Field(
-        default=None, description="List of strings representing an address", alias="addr-lines"
+        default=None,
+        description="List of strings representing an address",
+        alias="addr-lines",
     )
     city: str | None = Field(
-        default=None, description="City, town or geographical region for the mailing address."
+        default=None,
+        description="City, town or geographical region for the mailing address.",
     )
     state: str | None = Field(
         default=None,
         description="State, province or analogous geographical region for a mailing address.",
     )
     postal_code: str | None = Field(
-        default=None, description="Postal or ZIP code for mailing address.", alias="postal-code"
+        default=None,
+        description="Postal or ZIP code for mailing address.",
+        alias="postal-code",
     )
     country: str | None = Field(
         default=None,
@@ -255,12 +275,57 @@ class PartyTypeEnum(str, Enum):
     organization = "organization"
 
 
+class ExternalID(BaseModel):
+    scheme: AnyUrl = Field(description="Indicates the type of external identifier.")
+    id: str | None = Field(
+        default=None,
+        description="An identifier for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)",
+    )
+
+
 class Party(BaseModel):
     uuid: UUID = Field(description="A unique identifier for the party.")
     type: PartyTypeEnum = Field(
         description="A category describing the kind of party the object describes."
     )
-    # TODO: Start Here
+    name: str | None = Field(
+        default=None,
+        description="The full name of the party. This is typically the legal name associated with the party.",
+    )
+    short_name: str | None = Field(
+        default=None,
+        description="A short common name, abbreviation, or acronym for the party.",
+        alias="short-name",
+    )
+    external_ids: list[ExternalID] | None = Field(default=None, alias="external-ids")
+    props: list[Property] | None = Field(default=None)
+    links: list[Link] | None = Field(default=None)
+    email_addresses: list[EmailStr] | None = Field(
+        default=None,
+        description="A list of email addresses as defined by RFC 5322 Section 3.4.1. This is a contact email associated with the party.",
+        alias="email-addresses",
+    )
+    telephone_numbers: list[TelephoneNumber] | None = Field(
+        default=None,
+        description="Contact number by telephone",
+        alias="telephone-numbers",
+    )
+    addresses: list[Address] | None = Field(
+        default=None, description="A postal address for the location."
+    )
+    location_uuids: list[UUID] | None = Field(
+        default=None,
+        description="A machine-oriented identifier reference to a location defined in the metadata section of this or another OSCAL instance. The UUID of the location in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+        alias="location-uuids",
+    )
+    member_of_organizations: list[UUID] | None = Field(
+        default=None,
+        description="A machine-oriented identifier reference to another party (person or organization) that this subject is associated with. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+        alias="member-of-organizations",
+    )
+    remarks: MarkupMultiline | None = Field(
+        default=None, description="Additional commentary on the containing object."
+    )
 
 
 class Metadata(BaseModel):
@@ -293,4 +358,19 @@ class Metadata(BaseModel):
     locations: list[Location] | None = Field(
         default=None,
         description="A physical point of presence, which may be associated with people, organizations, or other concepts within the current or linked OSCAL document.",
+    )
+    parties: list[Party] | None = Field(
+        default=None,
+        description="A responsible entity which is either a person or an organization.",
+    )
+
+
+class Parameter(BaseModel):
+    id: Token = Field(
+        description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document."
+    )
+    parameter_class: Token | None = Field(  # Named "parameter_class" instead of "class" which is a reserved word in python
+        default=None,
+        description="A textual label that provides a characterization of the parameter.",
+        alias="class",
     )
