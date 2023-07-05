@@ -4,19 +4,19 @@ from enum import Enum
 
 from . import core, common
 
-from pydantic import BaseModel, RootModel, ConfigDict, Field, AnyUrl
+from pydantic import RootModel, Field, AnyUrl
 
 
 class Expression(RootModel[str]):
     root: str = Field(description="A formal (executable) expression of a constraint.")
 
 
-class Test(BaseModel):
+class Test(core.OscalModel):
     expression: Expression
     remarks: core.Remarks | None = Field(default=None)
 
 
-class Constraint(BaseModel):
+class Constraint(core.OscalModel):
     description: core.MarkupMultiline | None = Field(
         default=None,
         description="A formal or informal expression of a constraint or test.",
@@ -27,7 +27,7 @@ class Constraint(BaseModel):
     )
 
 
-class Guideline(BaseModel):
+class Guideline(core.OscalModel):
     prose: core.MarkupMultiline = Field(
         description="A prose statement that provides a recommendation for the use of a parameter."
     )
@@ -44,7 +44,7 @@ class SelectionHowManyEnum(str, Enum):
     one_or_more = "one-or-more"
 
 
-class Selection(BaseModel):
+class Selection(core.OscalModel):
     how_many: SelectionHowManyEnum | None = Field(
         default=None,
         description="Describes the number of selections that must occur. Without this setting, only one value should be assumed to be permitted.",
@@ -54,8 +54,7 @@ class Selection(BaseModel):
     )
 
 
-class Parameter(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+class Parameter(core.OscalModel):
     id: core.Token = Field(
         description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document."
     )
@@ -93,7 +92,7 @@ class Parameter(BaseModel):
     )
 
 
-class Part(BaseModel):
+class Part(core.OscalModel):
     id: core.Token | None = Field(
         default=None,
         description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined part elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document.",
@@ -120,8 +119,7 @@ class Part(BaseModel):
     links: list[core.Link] | None = Field(default=None)
 
 
-class Control(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+class Control(core.OscalModel):
     id: core.Token = Field(
         description="A human-oriented, locally unique identifier with instance scope that can be used to reference this control elsewhere in this and other OSCAL instances (e.g., profiles). This id should be assigned per-subject, which means it should be consistently used to identify the same control across revisions of the document."
     )
@@ -145,8 +143,7 @@ class Control(BaseModel):
     control: list[Control] | None = Field(default=None)
 
 
-class Group(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+class Group(core.OscalModel):
     id: core.Token | None = Field(
         default=None,
         description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined group elsewhere in in this and other OSCAL instances (e.g., profiles). This id should be assigned per-subject, which means it should be consistently used to identify the same group across revisions of the document.",
@@ -170,12 +167,23 @@ class Group(BaseModel):
     controls: list[Control] | None = Field(default=None)
 
 
-class Catalog(BaseModel):
+class Catalog(core.OscalModel):
     uuid: core.UUID = Field(
         description="A globally unique identifier with cross-instance scope for this catalog instance. This UUID should be changed when this document is revised."
     )
     metadata: common.Metadata
-    params: list[Parameter] | None = Field(default=None)
-    controls: list[Control] | None = Field(default=None)
-    groups: list[Group] | None = Field(default=None)
-    # TODO: common.Backmatter
+    params: list[Parameter] | None = Field(
+        default=None,
+        description="Parameters provide a mechanism for the dynamic assignment of value(s) in a control.",
+    )
+    controls: list[Control] | None = Field(
+        default=None,
+        description="A structured information object representing a security or privacy control. Each security or privacy control within the Catalog is defined by a distinct control instance.",
+    )
+    groups: list[Group] | None = Field(
+        default=None, description="A group of controls, or of groups of controls."
+    )
+    back_matter: common.BackMatter | None = Field(
+        default=None,
+        description="A collection of resources, which may be included directly or by reference.",
+    )

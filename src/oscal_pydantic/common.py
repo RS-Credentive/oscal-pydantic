@@ -4,7 +4,6 @@ from __future__ import annotations
 from . import core
 
 from pydantic import (
-    BaseModel,
     Field,
     RootModel,
     AwareDatetime,
@@ -30,7 +29,7 @@ class Published(RootModel[AwareDatetime]):
 class LastModified(RootModel[AwareDatetime]):
     root: AwareDatetime = Field(
         description="The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
-        serialization_alias="last-modified",
+        alias="last-modified",
     )
 
 
@@ -49,7 +48,7 @@ class OscalVersion(RootModel[str]):
     )
 
 
-class Role(BaseModel):
+class Role(core.OscalModel):
     id: core.Token = Field(description="A unique identifier for the role.")
     title: core.MarkupLine = Field(
         description="A name given to the role, which may be used by a tool for display and navigation."
@@ -73,7 +72,7 @@ class Role(BaseModel):
     remarks: core.Remarks | None = Field(default=None)
 
 
-class Address(BaseModel):
+class Address(core.OscalModel):
     type: core.Token | None = Field(
         default=None, description="Indicates the type of address."
     )
@@ -102,7 +101,7 @@ class Address(BaseModel):
     )
 
 
-class TelephoneNumber(BaseModel):
+class TelephoneNumber(core.OscalModel):
     type: str | None = Field(
         default=None,
         description="Indicates the type of phone number. The value may be locally defined, or one of the following: home: A home phone number; office: An office phone number; mobile: A mobile phone number.",
@@ -114,7 +113,7 @@ class TelephoneNumber(BaseModel):
     )
 
 
-class Location(BaseModel):
+class Location(core.OscalModel):
     uuid: core.UUID = Field(description="A unique ID for the location, for reference.")
     title: core.MarkupLine | None = Field(
         default=None,
@@ -151,7 +150,7 @@ class Location(BaseModel):
     )
 
 
-class Revision(BaseModel):
+class Revision(core.OscalModel):
     title: Title | None = Field(default=None)
     published: Published | None = Field(default=None)
     last_modified: LastModified | None = Field(default=None)
@@ -168,9 +167,12 @@ class Scheme(RootModel[AnyUrl]):
     )
 
 
-class DocumentID(BaseModel):
-    scheme: Scheme | None = Field(default=None)
-    identifier: core.Token
+class DocumentID(core.OscalModel):
+    scheme: Scheme | None = Field(
+        default=None,
+        description="Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters",
+    )
+    identifier: str | None = Field(default=None)
 
 
 class PartyTypeEnum(str, Enum):
@@ -178,7 +180,7 @@ class PartyTypeEnum(str, Enum):
     organization = "organization"
 
 
-class ExternalID(BaseModel):
+class ExternalID(core.OscalModel):
     scheme: AnyUrl = Field(description="Indicates the type of external identifier.")
     id: str | None = Field(
         default=None,
@@ -186,7 +188,7 @@ class ExternalID(BaseModel):
     )
 
 
-class Party(BaseModel):
+class Party(core.OscalModel):
     uuid: core.UUID = Field(description="A unique identifier for the party.")
     type: PartyTypeEnum = Field(
         description="A category describing the kind of party the object describes."
@@ -243,7 +245,7 @@ class PartyUUID(RootModel[core.UUID]):
     )
 
 
-class ResponsibleParty(BaseModel):
+class ResponsibleParty(core.OscalModel):
     role_id: RoleID = Field(alias="role-id")
     party_uuid: PartyUUID = Field(alias="party-uuid")
     props: list[core.Property] | None = Field(default=None)
@@ -251,7 +253,7 @@ class ResponsibleParty(BaseModel):
     remarks: core.Remarks | None = Field(default=None)
 
 
-class Metadata(BaseModel):
+class Metadata(core.OscalModel):
     title: Title
     published: Published | None = Field(default=None)
     last_modified: LastModified
@@ -291,3 +293,67 @@ class Metadata(BaseModel):
         description="A reference to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object.",
     )
     remarks: core.Remarks | None = Field(default=None)
+
+
+class Citation(core.OscalModel):
+    text: core.MarkupLine = Field(description="A line of citation text.")
+    props: list[core.Property] | None = Field(default=None)
+    links: list[core.Link] | None = Field(default=None)
+
+
+class Hash(core.OscalModel):
+    algorithm: str = Field(
+        description="Method by which a hash is derived"
+    )  # TODO: Add constraints on hash types
+    value: str | None = Field(
+        default=None
+    )  # TODO: This appears to be a bug in the spec - should not be empty
+
+
+class Base64(core.OscalModel):
+    filename: AnyUrl | None = Field(
+        description="Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
+    )
+    media_type: core.MediaType | None = Field(default=None)
+    value: core.Base64Binary | None = Field(
+        default=None
+    )  # TODO: Probably a bug - should be mandatory
+
+
+class RLink(core.OscalModel):
+    href: AnyUrl = Field(description="A resolvable URI reference to a resource.")
+    media_type: str | None = Field(
+        default=None,
+        description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
+    )
+    hashes: str | None = Field(default=None)
+
+
+class Resource(core.OscalModel):
+    uuid: core.UUID = Field(
+        description="A machine-oriented, globally unique identifier with cross-instance scope that can be used to reference this defined resource elsewhere in this or other OSCAL instances. This UUID should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document."
+    )
+    title: core.MarkupLine | None = Field(
+        default=None,
+        description="A name given to the resource, which may be used by a tool for display and navigation.",
+    )
+    description: core.MarkupMultiline | None = Field(
+        default=None,
+        description="A short summary of the resource used to indicate the purpose of the resource.",
+    )
+    props: list[core.Property] | None = Field(default=None)
+    document_ids: list[DocumentID] | None = Field(default=None, alias="document-ids")
+    citation: Citation | None = Field(
+        default=None,
+        description="A citation consisting of end note text and optional structured bibliographic data.",
+    )
+    rlinks: list[RLink] | None = Field(default=None)
+    base64: list[core.Base64Binary] | None = Field(default=None)
+    remarks: core.MarkupMultiline | None = Field(default=None)
+
+
+class BackMatter(core.OscalModel):
+    resources: list[Resource] | None = Field(
+        default=None,
+        description="A resource associated with content in the containing document. A resource may be directly included in the document base64 encoded or may point to one or more equivalent internet resources.",
+    )
