@@ -4,7 +4,7 @@ from enum import Enum
 
 from . import core, common
 
-from pydantic import RootModel, Field, AnyUrl
+from pydantic import RootModel, Field
 
 
 class Expression(RootModel[str]):
@@ -100,7 +100,7 @@ class Part(core.OscalModel):
     name: core.Token = Field(
         description="A textual label that uniquely identifies the part's semantic type."
     )
-    ns: AnyUrl | None = Field(
+    ns: core.UrlReference | None = Field(
         default=None,
         description="A namespace qualifying the part's name. This allows different organizations to associate distinct semantics with the same name.",
     )
@@ -140,7 +140,7 @@ class Control(core.OscalModel):
     )
     links: list[core.Link] | None = Field(default=None)
     parts: list[Part] | None = Field(default=None)
-    control: list[Control] | None = Field(default=None)
+    controls: list[Control] | None = Field(default=None)
 
 
 class Group(core.OscalModel):

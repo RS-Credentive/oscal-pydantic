@@ -7,7 +7,6 @@ from pydantic import (
     Field,
     RootModel,
     AwareDatetime,
-    AnyUrl,
     EmailStr,
 )
 
@@ -29,7 +28,6 @@ class Published(RootModel[AwareDatetime]):
 class LastModified(RootModel[AwareDatetime]):
     root: AwareDatetime = Field(
         description="The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
-        alias="last-modified",
     )
 
 
@@ -43,7 +41,6 @@ class OscalVersion(RootModel[str]):
     root: str = Field(
         default="1.0.5",
         description="The OSCAL model version the document was authored against. This library currently produces 1.0.5",
-        alias="oscal-version",
         pattern="^1.0.5$",
     )
 
@@ -79,7 +76,6 @@ class Address(core.OscalModel):
     addr_lines: list[str] | None = Field(
         default=None,
         description="List of strings representing an address",
-        alias="addr-lines",
     )
     city: str | None = Field(
         default=None,
@@ -92,7 +88,6 @@ class Address(core.OscalModel):
     postal_code: str | None = Field(
         default=None,
         description="Postal or ZIP code for mailing address.",
-        alias="postal-code",
     )
     country: str | None = Field(
         default=None,
@@ -126,14 +121,12 @@ class Location(core.OscalModel):
     email_addresses: list[EmailStr] | None = Field(
         default=None,
         description="List of email addresses as defined by RFC 5322 Section 3.4.1.",
-        alias="email-address",
     )
     telephone_number: list[TelephoneNumber] | None = Field(
         default=None,
         description="A list of telephone service numbers as defined by ITU-T E.164.",
-        alias="telephone-number",
     )
-    urls: list[AnyUrl] | None = Field(
+    urls: list[core.UrlReference] | None = Field(
         default=None,
         description="A list of uniform resource locators (URLs) for a web site or other resource associated with the location.",
     )
@@ -161,8 +154,8 @@ class Revision(core.OscalModel):
     remarks: core.Remarks | None = Field(default=None)
 
 
-class Scheme(RootModel[AnyUrl]):
-    root: AnyUrl = Field(
+class Scheme(RootModel[core.UrlReference]):
+    root: core.UrlReference = Field(
         description="Qualifies the kind of document identifier using a URI. If the scheme is not provided the value of the element will be interpreted as a string of characters."
     )
 
@@ -181,7 +174,9 @@ class PartyTypeEnum(str, Enum):
 
 
 class ExternalID(core.OscalModel):
-    scheme: AnyUrl = Field(description="Indicates the type of external identifier.")
+    scheme: core.UrlReference = Field(
+        description="Indicates the type of external identifier."
+    )
     id: str | None = Field(
         default=None,
         description="An identifier for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)",
@@ -200,20 +195,17 @@ class Party(core.OscalModel):
     short_name: str | None = Field(
         default=None,
         description="A short common name, abbreviation, or acronym for the party.",
-        alias="short-name",
     )
-    external_ids: list[ExternalID] | None = Field(default=None, alias="external-ids")
+    external_ids: list[ExternalID] | None = Field(default=None)
     props: list[core.Property] | None = Field(default=None)
     links: list[core.Link] | None = Field(default=None)
     email_addresses: list[EmailStr] | None = Field(
         default=None,
         description="A list of email addresses as defined by RFC 5322 Section 3.4.1. This is a contact email associated with the party.",
-        alias="email-addresses",
     )
     telephone_numbers: list[TelephoneNumber] | None = Field(
         default=None,
         description="Contact number by telephone",
-        alias="telephone-numbers",
     )
     addresses: list[Address] | None = Field(
         default=None, description="A postal address for the location."
@@ -221,12 +213,10 @@ class Party(core.OscalModel):
     location_uuids: list[core.UUID] | None = Field(
         default=None,
         description="A machine-oriented identifier reference to a location defined in the metadata section of this or another OSCAL instance. The UUID of the location in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
-        alias="location-uuids",
     )
     member_of_organizations: list[core.UUID] | None = Field(
         default=None,
         description="A machine-oriented identifier reference to another party (person or organization) that this subject is associated with. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
-        alias="member-of-organizations",
     )
     remarks: core.MarkupMultiline | None = Field(
         default=None, description="Additional commentary on the containing object."
@@ -246,8 +236,8 @@ class PartyUUID(RootModel[core.UUID]):
 
 
 class ResponsibleParty(core.OscalModel):
-    role_id: RoleID = Field(alias="role-id")
-    party_uuid: PartyUUID = Field(alias="party-uuid")
+    role_id: RoleID
+    party_uuids: list[PartyUUID]
     props: list[core.Property] | None = Field(default=None)
     links: list[core.Link] | None = Field(default=None)
     remarks: core.Remarks | None = Field(default=None)
@@ -265,7 +255,6 @@ class Metadata(core.OscalModel):
     )
     document_ids: list[DocumentID] | None = Field(
         default=None,
-        alias="document-ids",
         description="A document identifier qualified by an identifier scheme.",
     )
     props: list[core.Property] | None = Field(
@@ -289,7 +278,7 @@ class Metadata(core.OscalModel):
         description="A responsible entity which is either a person or an organization.",
     )
     responsible_parties: list[ResponsibleParty] | None = Field(
-        default="None",
+        default=None,
         description="A reference to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object.",
     )
     remarks: core.Remarks | None = Field(default=None)
@@ -311,7 +300,7 @@ class Hash(core.OscalModel):
 
 
 class Base64(core.OscalModel):
-    filename: AnyUrl | None = Field(
+    filename: core.UrlReference | None = Field(
         description="Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
     )
     media_type: core.MediaType | None = Field(default=None)
@@ -321,7 +310,9 @@ class Base64(core.OscalModel):
 
 
 class RLink(core.OscalModel):
-    href: AnyUrl = Field(description="A resolvable URI reference to a resource.")
+    href: core.UrlReference = Field(
+        description="A resolvable URI reference to a resource."
+    )
     media_type: str | None = Field(
         default=None,
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
@@ -342,7 +333,7 @@ class Resource(core.OscalModel):
         description="A short summary of the resource used to indicate the purpose of the resource.",
     )
     props: list[core.Property] | None = Field(default=None)
-    document_ids: list[DocumentID] | None = Field(default=None, alias="document-ids")
+    document_ids: list[DocumentID] | None = Field(default=None)
     citation: Citation | None = Field(
         default=None,
         description="A citation consisting of end note text and optional structured bibliographic data.",

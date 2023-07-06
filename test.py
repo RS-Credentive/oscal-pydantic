@@ -1,6 +1,8 @@
 import datetime
+import json
+import uuid
 
-from src.oscal_pydantic import common, core
+from src.oscal_pydantic import common, core, catalog
 
 # MANDATORY TYPES
 title = common.Title("Title")
@@ -30,4 +32,24 @@ prop_class = core.PropertyClass("Testing-Class")
 
 prop = core.Property(name=prop_name, value=prop_value, property_class=prop_class)
 
-print(prop.model_dump_json(by_alias=True, exclude_none=True))
+print(prop.model_dump_json())
+
+back_matter = common.BackMatter()
+
+constructed_catalog = catalog.Catalog(
+    uuid=core.UUID(),
+    metadata=metadata,
+    back_matter=back_matter,
+)
+
+print(constructed_catalog.model_dump_json())
+
+# try to import the 800-53 catalog
+with open(
+    "/workspaces/oscal-pydantic/test-data/NIST_SP-800-53_rev5_catalog.json", "r"
+) as catalog_file:
+    catalog_json = catalog_file.read()
+
+catalog_dict = json.loads(catalog_json)
+
+catalog.Catalog.model_validate(catalog_dict["catalog"])

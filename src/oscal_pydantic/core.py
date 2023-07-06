@@ -9,12 +9,22 @@ from pydantic import (
     Field,
     AnyUrl,
 )
-from pydantic.main import IncEx
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pydantic.main import IncEx
 
 
 # Helper function to convert python_variable_name to json-attribute-name
-def underscores_to_dashes(string: str):
-    return "-".join(word for word in string.split("_"))
+def oscal_aliases(string: str) -> str:
+    wordlist = string.split("_")
+    if wordlist[-1] == "class":
+        # if the original is a variant of "XXX_class", the attribute should be called "class"
+        return "class"
+    else:
+        # otherwise just replace the "_" with "-"
+        return "-".join(word for word in string.split("_"))
 
 
 class OscalModel(BaseModel):
@@ -23,7 +33,7 @@ class OscalModel(BaseModel):
         extra="forbid",
         populate_by_name=True,
         validate_assignment=True,
-        alias_generator=underscores_to_dashes,
+        alias_generator=oscal_aliases,
     )
 
     # Override default model_dump_json to include indentation, exclude null values and always use alias
@@ -64,7 +74,7 @@ class UUID(RootModel[uuid.UUID]):
 class Token(RootModel[str]):
     root: str = Field(
         description="Non-colonized token type used for various identifiers",
-        pattern=r"^([^\W\d]|[:_]){1}[\w\d:\-_]*$",  # "any non-numeric character, _ or :, followed by a sequence of any alphanumeric character, _, :, -, or ."
+        pattern=r"^([^\W\d]|[:_]){1}[\w\d:\-_.]*$",  # "any non-numeric character, _ or :, followed by a sequence of any alphanumeric character, _, :, -, or ."
     )
 
 
@@ -88,13 +98,20 @@ class Relation(RootModel[Token]):
     )
 
 
+class FragmentIdentifier(RootModel[str]):
+    root: str = Field(pattern=r"^#(.*)$")
+
+
+class UrlReference(RootModel[AnyUrl | FragmentIdentifier]):
+    root: AnyUrl | FragmentIdentifier
+
+
 class Link(OscalModel):
-    href: AnyUrl = Field(description="A reference to a local or remote resource")
+    href: UrlReference = Field(description="A reference to a local or remote resource")
     rel: Relation | None = Field(default=None)
     media_type: str | None = Field(
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
         default=None,
-        alias="media-type",
     )
     resource_fragment: str | None = Field(
         description="In case where the href points to a back-matter/resource, this value will indicate the URI fragment to append to any rlink associated with the resource. This value MUST be URI encoded.",
@@ -109,8 +126,8 @@ class Name(RootModel[Token]):
     )
 
 
-class NS(RootModel[AnyUrl]):
-    root: AnyUrl = Field(
+class NS(RootModel[UrlReference]):
+    root: UrlReference = Field(
         description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
     )
 
@@ -140,10 +157,7 @@ class Property(OscalModel):
     uuid: UUID | None = None
     ns: NS | None = None
     value: Value
-    property_class: PropertyClass | None = Field(
-        default=None,
-        alias="class",
-    )
+    property_class: PropertyClass | None = Field(default=None)
     group: Group | None = Field(default=None)
     remarks: Remarks | None = Field(default=None)
 
@@ -151,7 +165,7 @@ class Property(OscalModel):
 class MediaType(RootModel[str]):
     root: str = Field(
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
-        pattern=r"^\w+\/([\w-]+\.)*[\w-]+(\+[\w]+)?(;.*)?$",
+        pattern=r"^\w+/([\w-]+\.)*[\w-]+(\+[\w]+)?(;.*)?$",
     )
 
 
