@@ -27,7 +27,7 @@ metadata = common.Metadata(
 print(metadata.model_dump_json())
 
 prop_name = core.Name("name")
-prop_value = core.Value("Value")
+prop_value = core.PropertyValue("Value")
 prop_class = core.PropertyClass("Testing-Class")
 
 prop = core.Property(name=prop_name, value=prop_value, property_class=prop_class)

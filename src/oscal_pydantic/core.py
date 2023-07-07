@@ -112,10 +112,12 @@ class Link(OscalModel):
     media_type: str | None = Field(
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
         default=None,
+        alias="media-type",
     )
     resource_fragment: str | None = Field(
         description="In case where the href points to a back-matter/resource, this value will indicate the URI fragment to append to any rlink associated with the resource. This value MUST be URI encoded.",
         default=None,
+        alias="resource-fragment",
     )
     text: MarkupLine | None = Field(default=None)
 
@@ -126,13 +128,14 @@ class Name(RootModel[Token]):
     )
 
 
-class NS(RootModel[UrlReference]):
+class PropertyNamespace(RootModel[UrlReference]):
     root: UrlReference = Field(
         description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
     )
 
 
-class Value(RootModel[str]):
+class PropertyValue(RootModel[str]):
+    # Even though this is a string, we are creating a RootModel class so that we can apply appropriate constraints for Property Values
     root: str
 
 
@@ -155,9 +158,9 @@ class Remarks(RootModel[str]):
 class Property(OscalModel):
     name: Name
     uuid: UUID | None = None
-    ns: NS | None = None
-    value: Value
-    property_class: PropertyClass | None = Field(default=None)
+    ns: PropertyNamespace | None = None
+    value: PropertyValue
+    property_class: PropertyClass | None = Field(default=None, alias="property-class")
     group: Group | None = Field(default=None)
     remarks: Remarks | None = Field(default=None)
 

@@ -53,6 +53,7 @@ class Role(core.OscalModel):
     short_name: str | None = Field(
         default=None,
         description="A short common name, abbreviation, or acronym for the role.",
+        alias="short-name",
     )
     description: core.MarkupMultiline | None = Field(
         default=None,
@@ -76,6 +77,7 @@ class Address(core.OscalModel):
     addr_lines: list[str] | None = Field(
         default=None,
         description="List of strings representing an address",
+        alias="addr-lines",
     )
     city: str | None = Field(
         default=None,
@@ -88,6 +90,7 @@ class Address(core.OscalModel):
     postal_code: str | None = Field(
         default=None,
         description="Postal or ZIP code for mailing address.",
+        alias="postal-code",
     )
     country: str | None = Field(
         default=None,
@@ -121,10 +124,12 @@ class Location(core.OscalModel):
     email_addresses: list[EmailStr] | None = Field(
         default=None,
         description="List of email addresses as defined by RFC 5322 Section 3.4.1.",
+        alias="email-addresses",
     )
     telephone_number: list[TelephoneNumber] | None = Field(
         default=None,
         description="A list of telephone service numbers as defined by ITU-T E.164.",
+        alias="telephone-number",
     )
     urls: list[core.UrlReference] | None = Field(
         default=None,
@@ -146,9 +151,9 @@ class Location(core.OscalModel):
 class Revision(core.OscalModel):
     title: Title | None = Field(default=None)
     published: Published | None = Field(default=None)
-    last_modified: LastModified | None = Field(default=None)
+    last_modified: LastModified | None = Field(default=None, alias="last-modified")
     version: Version
-    oscal_version: OscalVersion | None = Field(default=None)
+    oscal_version: OscalVersion | None = Field(default=None, alias="oscal-version")
     prop: list[core.Property] | None = Field(default=None)
     link: list[core.Link] | None = Field(default=None)
     remarks: core.Remarks | None = Field(default=None)
@@ -195,17 +200,20 @@ class Party(core.OscalModel):
     short_name: str | None = Field(
         default=None,
         description="A short common name, abbreviation, or acronym for the party.",
+        alias="short-name",
     )
-    external_ids: list[ExternalID] | None = Field(default=None)
+    external_ids: list[ExternalID] | None = Field(default=None, alias="external-ids")
     props: list[core.Property] | None = Field(default=None)
     links: list[core.Link] | None = Field(default=None)
     email_addresses: list[EmailStr] | None = Field(
         default=None,
         description="A list of email addresses as defined by RFC 5322 Section 3.4.1. This is a contact email associated with the party.",
+        alias="email-addresses",
     )
     telephone_numbers: list[TelephoneNumber] | None = Field(
         default=None,
         description="Contact number by telephone",
+        alias="telephone-numbers",
     )
     addresses: list[Address] | None = Field(
         default=None, description="A postal address for the location."
@@ -213,10 +221,12 @@ class Party(core.OscalModel):
     location_uuids: list[core.UUID] | None = Field(
         default=None,
         description="A machine-oriented identifier reference to a location defined in the metadata section of this or another OSCAL instance. The UUID of the location in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+        alias="location-uuids",
     )
     member_of_organizations: list[core.UUID] | None = Field(
         default=None,
         description="A machine-oriented identifier reference to another party (person or organization) that this subject is associated with. The UUID of the party in the source OSCAL instance is sufficient to reference the data item locally or globally (e.g., in an imported OSCAL instance).",
+        alias="member-of-organizations",
     )
     remarks: core.MarkupMultiline | None = Field(
         default=None, description="Additional commentary on the containing object."
@@ -237,7 +247,7 @@ class PartyUUID(RootModel[core.UUID]):
 
 class ResponsibleParty(core.OscalModel):
     role_id: RoleID
-    party_uuids: list[PartyUUID]
+    party_uuids: list[PartyUUID] = Field(alias="party-uuids")
     props: list[core.Property] | None = Field(default=None)
     links: list[core.Link] | None = Field(default=None)
     remarks: core.Remarks | None = Field(default=None)
@@ -246,9 +256,9 @@ class ResponsibleParty(core.OscalModel):
 class Metadata(core.OscalModel):
     title: Title
     published: Published | None = Field(default=None)
-    last_modified: LastModified
+    last_modified: LastModified = Field(alias="last-modified")
     version: Version
-    oscal_version: OscalVersion
+    oscal_version: OscalVersion = Field(alias="oscal-version")
     revisions: list[Revision] | None = Field(
         description="An entry in a sequential list of revisions to the containing document, expected to be in reverse chronological order (i.e. latest first).",
         default=None,
@@ -256,6 +266,7 @@ class Metadata(core.OscalModel):
     document_ids: list[DocumentID] | None = Field(
         default=None,
         description="A document identifier qualified by an identifier scheme.",
+        alias="document-ids",
     )
     props: list[core.Property] | None = Field(
         default=None,
@@ -280,6 +291,7 @@ class Metadata(core.OscalModel):
     responsible_parties: list[ResponsibleParty] | None = Field(
         default=None,
         description="A reference to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object.",
+        alias="responsible-parties",
     )
     remarks: core.Remarks | None = Field(default=None)
 
@@ -303,7 +315,10 @@ class Base64(core.OscalModel):
     filename: core.UrlReference | None = Field(
         description="Name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
     )
-    media_type: core.MediaType | None = Field(default=None)
+    media_type: core.MediaType | None = Field(
+        default=None,
+        alias="media-type",
+    )
     value: core.Base64Binary | None = Field(
         default=None
     )  # TODO: Probably a bug - should be mandatory
@@ -313,9 +328,10 @@ class RLink(core.OscalModel):
     href: core.UrlReference = Field(
         description="A resolvable URI reference to a resource."
     )
-    media_type: str | None = Field(
+    media_type: core.MediaType | None = Field(
         default=None,
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
+        alias="media-type",
     )
     hashes: str | None = Field(default=None)
 
@@ -333,7 +349,10 @@ class Resource(core.OscalModel):
         description="A short summary of the resource used to indicate the purpose of the resource.",
     )
     props: list[core.Property] | None = Field(default=None)
-    document_ids: list[DocumentID] | None = Field(default=None)
+    document_ids: list[DocumentID] | None = Field(
+        default=None,
+        alias="document-ids",
+    )
     citation: Citation | None = Field(
         default=None,
         description="A citation consisting of end note text and optional structured bibliographic data.",
