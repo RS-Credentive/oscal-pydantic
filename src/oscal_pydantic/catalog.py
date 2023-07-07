@@ -48,6 +48,7 @@ class Selection(core.OscalModel):
     how_many: SelectionHowManyEnum | None = Field(
         default=None,
         description="Describes the number of selections that must occur. Without this setting, only one value should be assumed to be permitted.",
+        alias="how-many",
     )
     choice: list[core.MarkupLine] | None = Field(
         default=None, description="A value selection among several such options."
@@ -186,4 +187,5 @@ class Catalog(core.OscalModel):
     back_matter: common.BackMatter | None = Field(
         default=None,
         description="A collection of resources, which may be included directly or by reference.",
+        alias="back-matter",
     )
