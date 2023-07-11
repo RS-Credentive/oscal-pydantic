@@ -1,4 +1,7 @@
-annotated-types==0.5.0
-pydantic>=2.0b3
-pydantic_core==0.39.0
-typing_extensions==4.7.0rc1
+annotated-types
+dnspython>=2.3
+email-validator>=2
+idna==3.4
+pydantic>=2
+pydantic_core>=2
+typing_extensions

@@ -1,6 +1,8 @@
 # Reuseable base classes for core data types
 from __future__ import annotations
 
+from typing import Literal
+
 import uuid
 from pydantic import (
     BaseModel,
@@ -8,6 +10,8 @@ from pydantic import (
     ConfigDict,
     Field,
     AnyUrl,
+    field_validator,
+    FieldValidationInfo,
 )
 
 from typing import TYPE_CHECKING
@@ -112,12 +116,12 @@ class Link(OscalModel):
     media_type: str | None = Field(
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
         default=None,
-        alias="media-type",
+        # alias="media-type",
     )
     resource_fragment: str | None = Field(
         description="In case where the href points to a back-matter/resource, this value will indicate the URI fragment to append to any rlink associated with the resource. This value MUST be URI encoded.",
         default=None,
-        alias="resource-fragment",
+        # alias="resource-fragment",
     )
     text: MarkupLine | None = Field(default=None)
 
@@ -134,9 +138,9 @@ class PropertyNamespace(RootModel[UrlReference]):
     )
 
 
-class PropertyValue(RootModel[str]):
+class OscalPropertyValue(RootModel[str]):
     # Even though this is a string, we are creating a RootModel class so that we can apply appropriate constraints for Property Values
-    root: str
+    root: Literal["marking"]
 
 
 class PropertyClass(RootModel[Token]):
@@ -157,12 +161,23 @@ class Remarks(RootModel[str]):
 
 class Property(OscalModel):
     name: Name
-    uuid: UUID | None = None
-    ns: PropertyNamespace | None = None
-    value: PropertyValue
+    uuid: UUID | None = Field(default=None)
+    ns: PropertyNamespace | None = Field(default="http://csrc.nist.gov/ns/oscal")
+    value: OscalPropertyValue | str
     property_class: PropertyClass | None = Field(default=None, alias="property-class")
     group: Group | None = Field(default=None)
     remarks: Remarks | None = Field(default=None)
+
+    # TODO: this function checks the values if the ns is default or blank. Should provide a way to check against custom schemas
+    @field_validator("value")
+    def confirm_default_property_values(cls, property: str, info: FieldValidationInfo):
+        if (
+            "ns" not in info.data.keys()
+            or info.data["ns"] == "http://csrc.nist.gov/ns/oscal"
+        ):
+            if info.data["name"] != "marking":
+                raise ValueError
+        pass
 
 
 class MediaType(RootModel[str]):
