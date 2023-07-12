@@ -126,21 +126,30 @@ class Link(OscalModel):
     text: MarkupLine | None = Field(default=None)
 
 
-class Name(RootModel[Token]):
-    root: Token = Field(
-        description="A textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object."
+class PropertyNamespace(RootModel[AnyUrl]):
+    root: AnyUrl = Field(
+        description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name.",
     )
 
 
-class PropertyNamespace(RootModel[UrlReference]):
-    root: UrlReference = Field(
-        description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name."
+class OscalNamespace(RootModel[PropertyNamespace]):
+    root: PropertyNamespace = Field(
+        default=AnyUrl("http://csrc.nist.gov/ns/oscal"),
     )
 
 
-class OscalPropertyValue(RootModel[str]):
-    # Even though this is a string, we are creating a RootModel class so that we can apply appropriate constraints for Property Values
-    root: Literal["marking"]
+class PropertyName(RootModel[str]):
+    root: str
+
+
+class OscalPropertyName(RootModel[PropertyName]):
+    root: PropertyName = Field(default=Literal["marking"])
+
+
+class PropertyValue(RootModel[str]):
+    root: str = Field(
+        description="Indicates the value of the attribute, characteristic, or quality."
+    )
 
 
 class PropertyClass(RootModel[Token]):
@@ -160,24 +169,28 @@ class Remarks(RootModel[str]):
 
 
 class Property(OscalModel):
-    name: Name
+    name: PropertyName
     uuid: UUID | None = Field(default=None)
-    ns: PropertyNamespace | None = Field(default="http://csrc.nist.gov/ns/oscal")
-    value: OscalPropertyValue | str
-    property_class: PropertyClass | None = Field(default=None, alias="property-class")
+    ns: OscalNamespace | PropertyNamespace = Field(default=OscalNamespace())
+    value: PropertyValue
+    property_class: PropertyClass | None = Field(default=None)
     group: Group | None = Field(default=None)
     remarks: Remarks | None = Field(default=None)
 
+    allowed_names: list[str] = []
+
     # TODO: this function checks the values if the ns is default or blank. Should provide a way to check against custom schemas
-    @field_validator("value")
-    def confirm_default_property_values(cls, property: str, info: FieldValidationInfo):
+    @field_validator("ns")
+    def confirm_default_property_values(
+        cls, property: OscalNamespace | PropertyNamespace, info: FieldValidationInfo
+    ):
+        # IF we use the nist namespace, we have to use a nist value. A blank namespace is assumed to be the NIST namespace
         if (
-            "ns" not in info.data.keys()
-            or info.data["ns"] == "http://csrc.nist.gov/ns/oscal"
+            "ns" in info.data.keys()
+            and isinstance(info.data["ns"], OscalNamespace)
+            and not isinstance(info.data["name"], OscalPropertyName)
         ):
-            if info.data["name"] != "marking":
-                raise ValueError
-        pass
+            raise ValueError
 
 
 class MediaType(RootModel[str]):

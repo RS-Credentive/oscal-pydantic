@@ -1,10 +1,11 @@
 # Common elements shared by all Models: Metadata, Back Matter
 from __future__ import annotations
 from enum import Enum
+from typing import Literal
 
 from . import core, common
 
-from pydantic import RootModel, Field
+from pydantic import RootModel, Field, field_validator, FieldValidationInfo, AnyUrl
 
 
 class Expression(RootModel[str]):
@@ -55,7 +56,34 @@ class Selection(core.OscalModel):
     )
 
 
-class Parameter(core.OscalModel):
+class NistRmfNamespace(RootModel[core.PropertyNamespace]):
+    root: core.PropertyNamespace = Field(default=AnyUrl("http://csrc.nist.gov/ns/rmf"))
+
+
+class CatalogParamsPropertyName(RootModel[str]):
+    root: Literal["label", "sort-id", "alt-identifier", "alt-label"]
+
+
+class CatalogParamsProperty(core.Property):
+    name: CatalogParamsPropertyName
+
+    # TODO: this function checks the values if the ns is default or blank. Should provide a way to check against custom schemas
+    @field_validator("ns")
+    def confirm_default_property_values(
+        cls,
+        property: core.OscalNamespace | core.PropertyNamespace,
+        info: FieldValidationInfo,
+    ):
+        # IF we use the nist namespace, we have to use a nist value. A blank namespace is assumed to be the NIST namespace
+        if (
+            "ns" in info.data.keys()
+            and isinstance(info.data["ns"], core.OscalNamespace)
+            and not isinstance(info.data["name"], CatalogParamsPropertyName)
+        ):
+            raise ValueError
+
+
+class CatalogParameter(core.OscalModel):
     id: core.Token = Field(
         description="A human-oriented, locally unique identifier with cross-instance scope that can be used to reference this defined parameter elsewhere in this or other OSCAL instances. When referenced from another OSCAL instance, this identifier must be referenced in the context of the containing resource (e.g., import-profile). This id should be assigned per-subject, which means it should be consistently used to identify the same subject across revisions of the document."
     )
@@ -64,7 +92,7 @@ class Parameter(core.OscalModel):
         description="A textual label that provides a characterization of the parameter.",
         alias="class",
     )
-    props: list[core.Property] | None = Field(
+    props: list[CatalogParamsProperty] | None = Field(
         default=None,
         description="An attribute, characteristic, or quality of the containing object expressed as a namespace qualified name/value pair.",
     )
@@ -132,7 +160,7 @@ class Control(core.OscalModel):
     title: core.MarkupLine = Field(
         description="A name given to the control, which may be used by a tool for display and navigation."
     )
-    params: list[Parameter] | None = Field(
+    params: list[CatalogParameter] | None = Field(
         default=None,
         description="Parameters provide a mechanism for the dynamic assignment of value(s) in a control.",
     )
@@ -157,7 +185,7 @@ class Group(core.OscalModel):
     title: core.MarkupLine = Field(
         description="A name given to the group, which may be used by a tool for display and navigation."
     )
-    params: list[Parameter] | None = Field(
+    params: list[CatalogParameter] | None = Field(
         default=None,
         description="Parameters provide a mechanism for the dynamic assignment of value(s) in a control.",
     )
@@ -173,7 +201,7 @@ class Catalog(core.OscalModel):
         description="A globally unique identifier with cross-instance scope for this catalog instance. This UUID should be changed when this document is revised."
     )
     metadata: common.Metadata
-    params: list[Parameter] | None = Field(
+    params: list[CatalogParameter] | None = Field(
         default=None,
         description="Parameters provide a mechanism for the dynamic assignment of value(s) in a control.",
     )
@@ -187,5 +215,4 @@ class Catalog(core.OscalModel):
     back_matter: common.BackMatter | None = Field(
         default=None,
         description="A collection of resources, which may be included directly or by reference.",
-        alias="back-matter",
     )

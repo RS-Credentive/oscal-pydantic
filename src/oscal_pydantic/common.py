@@ -1,14 +1,12 @@
 # Common elements shared by all Models: Metadata, Back Matter
 from __future__ import annotations
 
+from typing import Any
+import re
+
 from . import core
 
-from pydantic import (
-    Field,
-    RootModel,
-    AwareDatetime,
-    EmailStr,
-)
+from pydantic import Field, RootModel, AwareDatetime, EmailStr, field_validator
 
 from enum import Enum
 
@@ -24,11 +22,27 @@ class Published(RootModel[AwareDatetime]):
         description="(Optional) The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included."
     )
 
+    # TODO - this is a hack to workaround an import issue in Pydantic v2 that is being corrected
+    @field_validator("root", mode="before")
+    def strip_nanosedonds(cls, v: Any) -> str:
+        if not isinstance(v, str):
+            raise ValueError
+        # remove any digits after first 6 after the dot
+        return re.sub(r"(\.\d{6})\d+", r"\g<1>", v)
+
 
 class LastModified(RootModel[AwareDatetime]):
     root: AwareDatetime = Field(
         description="The date and time the document was last modified. The date-time value must be formatted according to RFC 3339 with full time and time zone included.",
     )
+
+    # TODO - this is a hack to workaround an import issue in Pydantic v2 that is being corrected
+    @field_validator("root", mode="before")
+    def strip_nanoseconds(cls, v: Any):
+        if isinstance(v, str):
+            # remove any digits after first 6 after the dot
+            return re.sub(r"(\.\d{6})\d+", r"\g<1>", v)
+        return v
 
 
 class Version(RootModel[str]):

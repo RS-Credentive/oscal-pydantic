@@ -26,8 +26,8 @@ metadata = common.Metadata(
 
 print(metadata.model_dump_json())
 
-prop_name = core.Name("name")
-prop_value = core.PropertyValue("Value")
+prop_name = core.PropertyName("name")
+prop_value = core.PropertyValue("marking")
 prop_class = core.PropertyClass("Testing-Class")
 
 prop = core.Property(name=prop_name, value=prop_value, property_class=prop_class)
@@ -52,4 +52,6 @@ with open(
 
 catalog_dict = json.loads(catalog_json)
 
-catalog.Catalog.model_validate(catalog_dict["catalog"])
+imported_catalog = catalog.Catalog.model_validate(catalog_dict["catalog"])
+
+print("Hooray!")
