@@ -1,7 +1,7 @@
 # Reuseable base classes for core data types
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Annotated, Union
 
 import uuid
 from pydantic import (
@@ -126,24 +126,29 @@ class Link(OscalModel):
     text: MarkupLine | None = Field(default=None)
 
 
-class PropertyNamespace(RootModel[AnyUrl]):
+class GenericPropertyNamespace(RootModel[AnyUrl]):
     root: AnyUrl = Field(
         description="A namespace qualifying the property's name. This allows different organizations to associate distinct semantics with the same name.",
     )
 
 
-class OscalNamespace(RootModel[PropertyNamespace]):
-    root: PropertyNamespace = Field(
-        default=AnyUrl("http://csrc.nist.gov/ns/oscal"),
+class OscalPropertyNamespace(GenericPropertyNamespace):
+    root: AnyUrl = Field(default="http://csrc.nist.gov/ns/oscal")
+
+
+PropertyNamespace = Annotated[
+    Union[GenericPropertyNamespace, OscalPropertyNamespace], Field(discriminator="root")
+]
+
+
+class GenericPropertyName(RootModel[str]):
+    root: str = Field(
+        description="A textual label that uniquely identifies a specific attribute, characteristic, or quality of the property's containing object."
     )
 
 
-class PropertyName(RootModel[str]):
-    root: str
-
-
-class OscalPropertyName(RootModel[PropertyName]):
-    root: PropertyName = Field(default=Literal["marking"])
+class OscalPropertyName(GenericPropertyName):
+    root: str = Field(default=Literal["marking"])
 
 
 class PropertyValue(RootModel[str]):
@@ -169,9 +174,9 @@ class Remarks(RootModel[str]):
 
 
 class Property(OscalModel):
-    name: PropertyName
+    name: GenericPropertyName
     uuid: UUID | None = Field(default=None)
-    ns: OscalNamespace | PropertyNamespace = Field(default=OscalNamespace())
+    ns: PropertyNamespace = Field(default=OscalPropertyNamespace())
     value: PropertyValue
     property_class: PropertyClass | None = Field(default=None)
     group: Group | None = Field(default=None)
@@ -182,14 +187,13 @@ class Property(OscalModel):
     # TODO: this function checks the values if the ns is default or blank. Should provide a way to check against custom schemas
     @field_validator("ns")
     def confirm_default_property_values(
-        cls, property: OscalNamespace | PropertyNamespace, info: FieldValidationInfo
+        cls, property: PropertyNamespace, info: FieldValidationInfo
     ):
         # IF we use the nist namespace, we have to use a nist value. A blank namespace is assumed to be the NIST namespace
         if (
             "ns" in info.data.keys()
-            and isinstance(info.data["ns"], OscalNamespace)
-            and not isinstance(info.data["name"], OscalPropertyName)
-        ):
+            or isinstance(info.data["ns"], OscalPropertyNamespace)
+        ) and not isinstance(info.data["name"], OscalPropertyName):
             raise ValueError
 
 
@@ -197,11 +201,4 @@ class MediaType(RootModel[str]):
     root: str = Field(
         description="Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry.",
         pattern=r"^\w+/([\w-]+\.)*[\w-]+(\+[\w]+)?(;.*)?$",
-    )
-
-
-class Base64Binary(RootModel[str]):
-    root: str = Field(
-        description="A string representing arbitrary Base64-encoded binary data.",
-        pattern=r"^[0-9A-Fa-f]+$",
     )

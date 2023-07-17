@@ -26,7 +26,7 @@ metadata = common.Metadata(
 
 print(metadata.model_dump_json())
 
-prop_name = core.PropertyName("name")
+prop_name = core.GenericPropertyName("name")
 prop_value = core.PropertyValue("marking")
 prop_class = core.PropertyClass("Testing-Class")
 

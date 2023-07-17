@@ -56,16 +56,16 @@ class Selection(core.OscalModel):
     )
 
 
-class NistRmfNamespace(RootModel[core.PropertyNamespace]):
-    root: core.PropertyNamespace = Field(default=AnyUrl("http://csrc.nist.gov/ns/rmf"))
+class NistRmfNamespace(core.PropertyNamespace):
+    root: AnyUrl = Field(default=AnyUrl("http://csrc.nist.gov/ns/rmf"))
 
 
-class CatalogParamsPropertyName(RootModel[str]):
+class OSCALCatalogParamsPropertyName(RootModel[str]):
     root: Literal["label", "sort-id", "alt-identifier", "alt-label"]
 
 
 class CatalogParamsProperty(core.Property):
-    name: CatalogParamsPropertyName
+    name: OSCALCatalogParamsPropertyName
 
     # TODO: this function checks the values if the ns is default or blank. Should provide a way to check against custom schemas
     @field_validator("ns")
