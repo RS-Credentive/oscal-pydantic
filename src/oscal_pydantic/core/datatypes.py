@@ -1,22 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, timezone, timedelta
-from typing import Annotated
-
 import re
 import uuid
+from datetime import date, datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any
 
-from pydantic import (
-    RootModel,
-    Field,
-    field_validator,
-    ValidationError,
-    StrictBool,
-    NonNegativeInt,
-    PositiveInt,
-)
-
-from typing import TYPE_CHECKING, Any, Literal
+from pydantic import Field, NonNegativeInt, PositiveInt, RootModel, ValidationError
 
 if TYPE_CHECKING:
     pass
@@ -24,34 +13,33 @@ if TYPE_CHECKING:
 
 class Boolean(RootModel[bool]):
     """
-    A class used to represent an OSCAL Boolean:
+     A class used to represent an OSCAL Boolean:
 
-    https://pages.nist.gov/OSCAL/reference/datatypes/#boolean
+     https://pages.nist.gov/OSCAL/reference/datatypes/#boolean
 
-    A boolean value mapped in XML, JSON, and YAML as follows:
-    | Value | XML | JSON | YAML |
-    |:--- |:--- |:--- |:--- |
-    | true | `true` or `1` | `true` | `true` |
-    | false | `false` or `0` | `false` | `false` |
+     A boolean value mapped in XML, JSON, and YAML as follows:
+     | Value | XML               | JSON      | YAML      |
+     |:---   |:---               |:---       |:---       |
+     | true  | `true` or `1`     | `true`    | `true`    |
+     | false | `false` or `0`    | `false`   | `false`   |
 
-    Attributes:
-        root: (bool, "0" or "1", or 0 or 1): A boolean value represented either as a bool, the str "0" or "1", or the int 0 or 1.
+     Attributes:
+         root: (bool, "0" or "1", or 0 or 1): A boolean value represented either as a bool, the str "0" or "1", or the int 0 or 1.
 
-    Methods:
-    [field_validator]input_to_bool(value): a field validator to convert any valid input to a python bool
+    Notes: Currently doesn't filter JSON "truthy" values.
     """
 
     # TODO: Pydantic will accept values from JSON that are invalid in oscal, including:
     # Allowed values: 'f', 'n', 'no', 'off',  't', 'y', 'on', 'yes'
-    # Do I care?
+    # How to fix?
 
     root: bool = Field(description="A boolean value")
 
-    def __bool__(self):
-        if self.root:
-            return True
-        else:
-            return False
+    # def __bool__(self):
+    #     if self.root:
+    #         return True
+    #     else:
+    #         return False
 
 
 class Decimal(RootModel[float]):
@@ -143,11 +131,6 @@ class Date(RootModel[str]):
 
         timezone: datetime.timedelta
             A timedelta from UTC
-
-    Methods:
-        str_to_date: str
-            Accepts a string representing a 24-hour period with optional time zone. A date is formatted according to "full-date" as defined RFC3339.
-            This function assumes that a valid date is provided because the pattern associated with the root field should reject any invalid dates.
     """
 
     # ISO 8601 pattern ^([1-9]\d{3}[\-.](0[13578]|1[02])[\-.](0[1-9]|[12][0-9]|3[01]) ([01]\d|2[0123]):([012345]\d):([012345]\d))|([1-9]\d{3}[\-.](0[469]|11)[\-.](0[1-9]|[12][0-9]|30) ([01]\d|2[0123]):([012345]\d):([012345]\d))|([1-9]\d{3}[\-.](02)[\-.](0[1-9]|1[0-9]|2[0-8]) ([01]\d|2[0123]):([012345]\d):([012345]\d))|(((([1-9]\d)(0[48]|[2468][048]|[13579][26])|(([2468][048]|[13579][26])00)))[\-.](02)[\-.]29 ([01]\d|2[0123]):([012345]\d):([012345]\d))$
@@ -167,37 +150,111 @@ class Date(RootModel[str]):
 
     def model_post_init(self, __context: Any) -> None:
         patterns = re.match(
-            "^([0-9]{4})-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])(Z|[+-][0-9]{2}:[0-9]{2})?$",
+            "^([0-9]{4})-([0][1-9]|1[0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])(Z|([+|-])([0-1][0-9]|2[0-3]):([0-5][0-9]))?$",
             self.root,
         )
         # This shouldn't happen because of the filter, but this shuts up pylint
         if patterns is not None:
             self._date = date(
-                int(patterns.group(1)), int(patterns.group(2)), int(patterns.group(3))
+                int(patterns.group(1)),  # year
+                int(patterns.group(2)),  # month
+                int(patterns.group(3)),  # day
             )
-            if len(patterns.groups()) > 3:
-                if patterns.group(4) == "Z":
-                    self._timezone = timezone.utc
-                else:
-                    tz_patterns = re.match(
-                        "^([+-])([01][0-9]|2[0-4])(?::([0-5][0-9]))?$",
-                        patterns.group(4),
+
+            if patterns.group(4) is None:
+                pass
+            elif patterns.group(4) == "Z":
+                self._timezone = timezone.utc
+            else:
+                if patterns.group(5) == "-":
+                    self._timezone = timezone(
+                        timedelta(
+                            hours=-int(patterns.group(6)),
+                            minutes=int(patterns.group(7)),
+                        )
                     )
-                    if tz_patterns is not None:
-                        hours = float(tz_patterns.group(2))
-                        minutes = float(tz_patterns.group(3))
-                        if tz_patterns.group(1) == "-":
-                            self._timezone = timezone(
-                                timedelta(hours=-hours, minutes=minutes)
-                            )
-                        elif tz_patterns.group(1) == "+":
-                            self._timezone = timezone(
-                                timedelta(hours=hours, minutes=minutes)
-                            )
-                        else:
-                            raise ValidationError(
-                                "Invalid offset character - should be + or -"
-                            )
+                elif patterns.group(5) == "+":
+                    self._timezone = timezone(
+                        timedelta(
+                            hours=int(patterns.group(6)),
+                            minutes=int(patterns.group(7)),
+                        )
+                    )
+                else:
+                    raise ValidationError("Invalid offset character - should be + or -")
+
+
+class DateTime(RootModel[str]):
+    """
+    A class to represent an OSCAL DateTime String with optional Timezone(expressed as offset from UTC)
+
+    https://pages.nist.gov/OSCAL/reference/datatypes/#date
+
+    Attributes:
+        root: A string which must conform to the following
+
+        _datetime: datetime.datetime
+            A date
+
+        _timezone: datetime.timedelta
+            A timedelta from UTC
+    """
+
+    root: str = Field(
+        description="A string containing a date and time formatted according to 'date-time' as defined RFC3339. This type allows an optional time-offset (timezone). This use of timezone ensure that date/time information that is exchanged across timezones is unambiguous.",
+        pattern=r"(((2000|2400|2800|(19|2[0-9](0[48]|[2468][048]|[13579][26])))-02-29)|(((19|2[0-9])[0-9]{2})-02-(0[1-9]|1[0-9]|2[0-8]))|(((19|2[0-9])[0-9]{2})-(0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01]))|(((19|2[0-9])[0-9]{2})-(0[469]|11)-(0[1-9]|[12][0-9]|30)))T((2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?)(Z|[+-][0-9]{2}:[0-9]{2})?",
+    )
+
+    _datetime: datetime = Field(
+        description="A date-time.",
+    )
+    _timezone: timezone | None = Field(
+        description="An optional timezone, expressed as an offset from UTC",
+        default=None,
+    )
+
+    def model_post_init(self, __context: Any) -> None:
+        patterns = re.match(
+            r"^([0-9]{4})-([0][1-9]|1[0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0][1-9]|[1][0-2]):([0-5][0-9]):([0-5][0-9])(?:(?:\.)([0-9]{1,6}))?(Z|([+|-])([0-1][0-9]|2[0-3]):([0-5][0-9]))?$",
+            self.root,
+        )
+        # This shouldn't happen because of the filter, but this shuts up pylint
+        if patterns is not None:
+            self._datetime = datetime(
+                int(patterns.group(1)),  # year
+                int(patterns.group(2)),  # month
+                int(patterns.group(3)),  # day
+                int(patterns.group(4)),  # hour
+                int(patterns.group(5)),  # minute
+                int(patterns.group(6)),  # second
+            )
+            if patterns.group(7) is not None:  # Add microseconds if we got them
+                self._datetime += timedelta(microseconds=int(patterns.group(7)))
+
+            if patterns.group(8) is None:
+                # No timezone was passed in. Don't do anything
+                pass
+            elif patterns.group(8) == "Z":
+                # Zulu was passed in  - set timezone to UTD
+                self._timezone = timezone.utc
+            else:
+                # Confirm that the proper values were passed in
+                if patterns.group(9) == "-":
+                    self._timezone = timezone(
+                        timedelta(
+                            hours=-int(patterns.group(10)),
+                            minutes=int(patterns.group(11)),
+                        )
+                    )
+                elif patterns.group(9) == "+":
+                    self._timezone = timezone(
+                        timedelta(
+                            hours=int(patterns.group(10)),
+                            minutes=int(patterns.group(11)),
+                        )
+                    )
+                else:
+                    raise ValidationError("Invalid offset character - should be + or -")
 
 
 class Token(RootModel[str]):

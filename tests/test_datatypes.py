@@ -1,7 +1,7 @@
-import unittest
 import random
 import string
-
+import unittest
+from pydantic import ValidationError
 from ..src.oscal_pydantic.core import datatypes
 
 
@@ -23,3 +23,7 @@ class TestDatatypes(unittest.TestCase):
         for item in false_data:
             bool_test = datatypes.Boolean(item)
             self.assertFalse(bool_test)
+
+        # Check the junk values
+        for item in junk_data:
+            self.assertRaises(ValidationError, datatypes.Boolean(item))
