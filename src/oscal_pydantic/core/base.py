@@ -23,7 +23,15 @@ def oscal_aliases(string: str) -> str:
 
 
 class OscalModel(BaseModel):
-    # A utility class that defines default behaviors for all other Models
+    """
+    A utility class that defines default behaviors for all other Models:
+        * Extra values forbidden
+        * populate by name rather than alias
+        * Validate assignments by default
+        * Use a common alias generator to convert "XXX_class" to "class" and change underscores to hyphens
+        * When exporting json, exclude any attributes set to "None"
+    """
+
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,

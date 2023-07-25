@@ -570,14 +570,14 @@ class UriReference(RootModel[Uri | RelativeURI]):
 
 class UUID(RootModel[uuid.UUID]):
     """
-    A class to represent an OSCAL Decimal
+    A class to represent an OSCAL UUID
 
-    https://pages.nist.gov/OSCAL/reference/datatypes/#decimal
+    https://pages.nist.gov/OSCAL/reference/datatypes/#uuid
 
-    A real number expressed using decimal numerals.
+    A version 4 or 5 Universally Unique Identifier (UUID) as defined by RFC 4122.
 
     Attributes:
-        root: (float)
+        root: (uuid.UUID)
     """
 
     root: uuid.UUID = Field(
@@ -587,13 +587,36 @@ class UUID(RootModel[uuid.UUID]):
 
 
 class MarkupLine(RootModel[str]):
+    """
+    A class to represent an OSCAL MarkupLine
+
+    https://pages.nist.gov/OSCAL/reference/datatypes/#markup-line
+
+    A line of text leveraging the OSCAL/CommonMark inspired standard.
+
+    Attributes:
+        root: (str)
+    """
+
     root: str = Field(
         description="A line of text leveraging the OSCAL/CommonMark inspired standard, documented here: https://pages.nist.gov/OSCAL/reference/datatypes/#markup-line"
         # TODO: validate that the text is HTML or MD with only the permitted tags
+        # TODO: Parameter insertion
     )
 
 
 class MarkupMultiline(RootModel[str]):
+    """
+    A class to represent a markup-multiline body of text
+
+    https://pages.nist.gov/OSCAL/reference/datatypes/#markup-line
+
+    A body of text leveraging the OSCAL/CommonMark inspired standard.
+
+    Attributes:
+        root: (float)
+    """
+
     root: str = Field(
         description="A line of text leveraging the OSCAL/CommonMark inspired standard, documented here: https://pages.nist.gov/OSCAL/reference/datatypes/#markup-multiline"
         # TODO: validate that the text is HTML or MD with only the permitted tags
