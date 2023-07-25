@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from core import datatypes, common, base
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
+class CatalogProperty(common.Property):
+    pass
 
 class Parameter(base.OscalModel):
     pass
@@ -41,3 +43,7 @@ class Catalog(base.OscalModel):
         default=None,
     )
     back_matter: common.BackMatter
+
+    @field_validator("metadata")
+    def validate_metadata_properties(cls, v: common.Metadata):
+        

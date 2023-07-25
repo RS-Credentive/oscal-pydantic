@@ -13,6 +13,7 @@ from . import base, datatypes
 from pydantic import (
     Field,
     field_validator,
+    model_validator,
 )
 
 
@@ -37,7 +38,7 @@ class Property(base.OscalModel):
             A namespace qualifying the property's name. This allows different 
             organizations to associate distinct semantics with the same name.
             """,
-        default="http://csrc.nist.gov/ns/oscal",
+        default=datatypes.Uri("http://csrc.nist.gov/ns/oscal"),
     )
     value: datatypes.String = Field(
         description="""
@@ -58,6 +59,33 @@ class Property(base.OscalModel):
             """,
         default=None,
     )
+
+    # _permitted_ns_name_values: dict[datatypes.Uri, list[datatypes.Token]] = {
+    #     datatypes.Uri("http://csrc.nist.gov/ns/oscal"): [
+    #         datatypes.Token("marking"),
+    #     ]
+    # }
+
+    @model_validator(mode="after")
+    def check_property_values(self) -> Property:
+        """
+        check_property_values: Checks the permitted ns values to make sure they line up with
+        permitted names. Subclasses should add any additional permitted values
+
+        Args:
+            None
+
+        Raises:
+            ValueError: if either NS or name is not permitted
+
+        Returns: Property
+        """
+        # if self.ns not in self._permitted_ns_name_values.keys() or self.name not in [
+        #     name for name in self._permitted_ns_name_values[self.ns]
+        # ]:
+        #     raise ValueError
+
+        return self
 
 
 class Link(base.OscalModel):
