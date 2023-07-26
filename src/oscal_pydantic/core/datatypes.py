@@ -43,12 +43,6 @@ class Boolean(RootModel[bool]):
 
     root: bool = Field(description="A boolean value")
 
-    # def __bool__(self):
-    #     if self.root:
-    #         return True
-    #     else:
-    #         return False
-
 
 class Decimal(RootModel[float]):
     """
