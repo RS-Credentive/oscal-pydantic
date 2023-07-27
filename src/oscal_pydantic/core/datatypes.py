@@ -159,7 +159,7 @@ class Date(RootModel[str]):
             )
 
             if patterns.group(4) is None:
-                pass
+                self._timezone = None
             elif patterns.group(4) == "Z":
                 self._timezone = timezone.utc
             else:
