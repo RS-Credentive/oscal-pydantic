@@ -7,59 +7,13 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 import re
-from typing import Literal
 
-from . import base, datatypes
+from . import base, datatypes, properties
 
 from pydantic import (
     Field,
-    field_validator,
+    model_validator,
 )
-
-
-class Property(base.OscalModel):
-    # NOTE: This generic Property class should be extended to provide constraints on value name
-    name: datatypes.Token = Field(
-        description="""
-            A textual label that uniquely identifies a specific attribute, characteristic, 
-            or quality of the property's containing object.
-            """,
-    )
-    uuid: datatypes.UUID | None = Field(
-        description="""
-            A machine-oriented, globally unique identifier with cross-instance scope that 
-            can be used to reference this defined property elsewhere in this or other OSCAL 
-            instances. This UUID should be assigned per-subject, which means it should be 
-            consistently used to identify the same subject across revisions of the document.
-            """,
-        default=None,
-    )
-    ns: datatypes.Uri = Field(
-        description="""
-            A namespace qualifying the property's name. This allows different 
-            organizations to associate distinct semantics with the same name.
-            """,
-        default=datatypes.Uri("http://csrc.nist.gov/ns/oscal"),
-    )
-    value: datatypes.String = Field(
-        description="""
-            Indicates the value of the attribute, characteristic, or quality.
-            """,
-    )
-    prop_class: datatypes.Token | None = Field(
-        description="""
-            A textual label that provides a sub-type or characterization of the property's 
-            name. This can be used to further distinguish or discriminate between the 
-            semantics of multiple properties of the same object with the same name and ns.
-            """,
-        default=None,
-    )
-    remarks: datatypes.MarkupMultiline | None = Field(
-        description="""
-            Additional commentary on the containing object.
-            """,
-        default=None,
-    )
 
 
 class Link(base.OscalModel):
@@ -137,7 +91,7 @@ class Revision(base.OscalModel):
             The OSCAL model version the document was authored against.
         """,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             Properties permit the deployment and management of arbitrary controlled values, 
             within OSCAL objects. A property can be included for any purpose useful to an 
@@ -165,6 +119,25 @@ class Revision(base.OscalModel):
         """,
         default=None,
     )
+
+    @model_validator(mode="after")
+    def validate_revision(self) -> Revision:
+        allowed_relationships = [
+            "canonical",
+            "alternate",
+            "predecessor-version",
+            "successor-version",
+        ]
+        if self.links is not None:
+            for link in self.links:
+                if link.rel not in [
+                    datatypes.Token(relationship)
+                    for relationship in allowed_relationships
+                ]:
+                    raise ValueError(
+                        f"link/@rel must be one of {[f'{rel} ' for rel in allowed_relationships]}"
+                    )
+        return self
 
 
 class DocumentID(base.OscalModel):
@@ -220,7 +193,7 @@ class Role(base.OscalModel):
             A summary of the role's purpose and associated responsibilities.
         """
     )
-    props: list[Property] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair. The value of a property is a simple scalar value, which may be 
@@ -280,10 +253,11 @@ class Address(base.OscalModel):
         default=None,
     )
 
-    @field_validator("country")
-    def two_letter_country_code(cls, v: datatypes.String):
-        if re.match("[A-Z]{2}", v.root) == None:
+    @model_validator(mode="after")
+    def two_letter_country_code(self) -> Address:
+        if self.country is not None and re.match("[A-Z]{2}", self.country.root) == None:
             raise ValueError("country string must have 2 letters")
+        return self
 
 
 class TelephoneNumber(base.OscalModel):
@@ -312,6 +286,17 @@ class TelephoneNumber(base.OscalModel):
         """,
         default=None,
     )
+
+    @model_validator(mode="after")
+    def validate_telephone_number(self) -> TelephoneNumber:
+        allowed_number_types = ["home", "office", "mobile"]
+        if self.type is not None and self.type not in [
+            datatypes.String(num_type) for num_type in allowed_number_types
+        ]:
+            raise ValueError(
+                f"Invalid number type. Must be one of {[f'{type} ' for type in allowed_number_types]}"
+            )
+        return self
 
 
 class Location(base.OscalModel):
@@ -375,7 +360,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.LocationProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -395,6 +380,10 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
+
+    @model_validator(mode="after")
+    def validate_type(self) -> Location:
+        return self
 
 
 class ExternalID(base.OscalModel):
@@ -424,7 +413,7 @@ class Party(base.OscalModel):
         param name (param type): describe the param
     """
 
-    uuid: datatypes.UUID = Field(
+    uuid: datatypes.UUID | None = Field(
         description="""
             A machine-oriented, globally unique identifier with cross-instance scope that can be 
             used to reference this defined party elsewhere in this or other OSCAL instances. The 
@@ -433,8 +422,9 @@ class Party(base.OscalModel):
             subject, which means it should be consistently used to identify the same subject 
             across revisions of the document.
         """,
+        default=None,
     )
-    type: datatypes.String = Field(
+    type: datatypes.String | None = Field(
         description="""
             A category describing the kind of party the object describes.
 
@@ -446,6 +436,7 @@ class Party(base.OscalModel):
             person: An individual.
             organization: A group of individuals formed for a specific purpose.
         """,
+        default=None,
     )
     name: datatypes.String | None = Field(
         description="""
@@ -515,13 +506,26 @@ class Party(base.OscalModel):
         default=None,
     )
 
-    @field_validator("type")
-    def permitted_types(cls, v: datatypes.String):
-        if v not in [
-            datatypes.String(root="person"),
-            datatypes.String(root="organization"),
+    @model_validator(mode="after")
+    def validate_party(self) -> Party:
+        allowed_property_names = ["mail-stop", "office", "job-title"]
+        if self.props is not None:
+            for prop in self.props:
+                if prop.name not in [
+                    datatypes.Token(name) for name in allowed_property_names
+                ]:
+                    raise ValueError(
+                        f"Property name must be one of {[f'{prop_name} ' for prop_name in allowed_property_names]}"
+                    )
+
+        allowed_types = ["person", "organization"]
+        if self.type is not None and self.type not in [
+            datatypes.String(type) for type in allowed_types
         ]:
-            raise ValueError('Party.type must be "person" or "organization"')
+            raise ValueError(
+                f"Type must be one of {[f'{type_name} ' for type_name in allowed_types]}"
+            )
+        return self
 
 
 class ResponsibleParty(base.OscalModel):
@@ -650,6 +654,24 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
+
+    @model_validator(mode="after")
+    def validate_metadata(self) -> Metadata:
+        # Check that the every role-id and party-id provided in responsible-party corresponds to a defined role or party respectively
+        if self.responsible_parties is not None:
+            if self.parties is None or self.roles is None:
+                raise ValueError(
+                    "Responsible Parties defined, but no Roles defined or no Parties defined"
+                )
+            for party in self.responsible_parties:
+                if party.role_id not in [role.id for role in self.roles]:
+                    raise ValueError(f"Role ID for {party} not found in roles")
+
+                party_uuids_from_parties = [party.uuid for party in self.parties]
+                for uuid in party.party_uuids:
+                    if uuid not in party_uuids_from_parties:
+                        raise ValueError(f"Party UUID {uuid} not present in parties")
+        return self
 
 
 class Citation(base.OscalModel):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import uuid
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any
+from typing import Any, Union, TypeAlias
 
 from pydantic import (
     Field,
@@ -14,9 +14,6 @@ from pydantic import (
     EmailStr,
     AnyUrl,
 )
-
-if TYPE_CHECKING:
-    pass
 
 
 class Boolean(RootModel[bool]):
@@ -596,3 +593,29 @@ class MarkupMultiline(RootModel[str]):
         description="A line of text leveraging the OSCAL/CommonMark inspired standard, documented here: https://pages.nist.gov/OSCAL/reference/datatypes/#markup-multiline"
         # TODO: validate that the text is HTML or MD with only the permitted tags
     )
+
+
+OscalDatatype: TypeAlias = Union[
+    Boolean,
+    Decimal,
+    Integer,
+    NonNegativeInteger,
+    PositiveInteger,
+    Base64Binary,
+    Date,
+    DateWithTimezone,
+    DateTime,
+    DateTimeWithTimezone,
+    Email,
+    Hostname,
+    IpV4Address,
+    IpV6Adrress,
+    String,
+    Token,
+    Uri,
+    RelativeURI,
+    UriReference,
+    UUID,
+    MarkupLine,
+    MarkupMultiline,
+]

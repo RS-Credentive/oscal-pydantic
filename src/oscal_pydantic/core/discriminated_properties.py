@@ -1,8 +1,15 @@
-from __future__ import annotations
+from typing import Literal, Union
+
+from typing_extensions import Annotated
 
 from . import base, datatypes
 
-from pydantic import Field, model_validator, ValidationInfo, Any
+from pydantic import Field, ValidationError
+
+
+#
+# EXPERIMENTAL: Can literals and discriminated types work better for properties?
+#
 
 
 class BaseProperty(base.OscalModel):
@@ -48,38 +55,3 @@ class BaseProperty(base.OscalModel):
             """,
         default=None,
     )
-
-
-class OscalProperty(BaseProperty):
-    @model_validator(mode="after")
-    def validate_property(self, info: ValidationInfo) -> OscalProperty:
-        allowed_values = {
-            "ns": [datatypes.Uri("http://csrc.nist.gov/ns/oscal")],
-            "name": [datatypes.Token("marking")],
-        }
-        validation_errors = self.field_errors(allowed_values=allowed_values)
-        if len(validation_errors) > 0:
-            if self.__class__ == OscalProperty:
-                print_errors = self.print_validation_errors(
-                    validation_errors=validation_errors
-                )
-                raise ValueError(f"Field Errors:\n{print_errors}\n", validation_errors)
-            else:
-                print(self.__class__)
-                self._field_errors.extend(validation_errors)
-
-        return self
-
-
-class LocationProperty(OscalProperty):
-    @model_validator(mode="after")
-    def validate_location_property(self) -> LocationProperty:
-        allowed_values = {
-            "name": [datatypes.Token("type")],
-            "value": [datatypes.String("data-center")],
-            "class": [datatypes.Token("primary"), datatypes.Token("alternate")],
-        }
-
-        validation_errors = self.field_errors(allowed_values=allowed_values)
-
-        return self
