@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import base, datatypes
 
-from pydantic import Field, model_validator, ValidationInfo, Any
+from pydantic import Field, model_validator, ValidationInfo
 
 
 class BaseProperty(base.OscalModel):
@@ -57,16 +57,12 @@ class OscalProperty(BaseProperty):
             "ns": [datatypes.Uri("http://csrc.nist.gov/ns/oscal")],
             "name": [datatypes.Token("marking")],
         }
-        validation_errors = self.field_errors(allowed_values=allowed_values)
-        if len(validation_errors) > 0:
-            if self.__class__ == OscalProperty:
-                print_errors = self.print_validation_errors(
-                    validation_errors=validation_errors
-                )
-                raise ValueError(f"Field Errors:\n{print_errors}\n", validation_errors)
-            else:
-                print(self.__class__)
-                self._field_errors.extend(validation_errors)
+        validation_results = self.validate_fields(allowed_values=allowed_values)
+        errors = [
+            result.error for result in validation_results if result.error is not None
+        ]
+        if len(errors) > 0:
+            print(errors)
 
         return self
 
@@ -80,6 +76,11 @@ class LocationProperty(OscalProperty):
             "class": [datatypes.Token("primary"), datatypes.Token("alternate")],
         }
 
-        validation_errors = self.field_errors(allowed_values=allowed_values)
+        validation_results = self.validate_fields(allowed_values=allowed_values)
+        errors = [
+            result.error for result in validation_results if result.error is not None
+        ]
+        if len(errors) > 0:
+            print(errors)
 
         return self

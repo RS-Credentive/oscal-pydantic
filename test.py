@@ -1,10 +1,10 @@
 from src.oscal_pydantic.core import datatypes, properties
 
 ns = datatypes.Uri("http://csrc.nist.gov/ns/oscal")
-# name = datatypes.Token("marking")
-# value = datatypes.String("test")
+name = datatypes.Token("marking")
+value = datatypes.String("test")
 
-# test_prop = properties.OscalProperty(ns=ns, name=name, value=value)
+test_prop = properties.OscalProperty(ns=ns, name=name, value=value)
 
 name = datatypes.Token("type")
 value = datatypes.String("data-center")

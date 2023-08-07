@@ -6,16 +6,24 @@ from pydantic import (
 )
 
 from typing import TYPE_CHECKING, NamedTuple, Any
+from collections import namedtuple
 
 from . import datatypes
 
 if TYPE_CHECKING:
     from pydantic.main import IncEx
 
+
 # To help with error reporting, we create a NamedTuple of the field, and the invalid value
-FieldError = NamedTuple(
-    "FieldError", [("field", str), ("value", datatypes.OscalDatatype)]
-)
+class FieldError(NamedTuple):
+    field: str
+    value: datatypes.OscalDatatype
+
+
+class FieldStatus(NamedTuple):
+    field: str
+    status: str
+    error: FieldError | None
 
 
 # Helper function to convert python_variable_name to json-attribute-name
@@ -76,6 +84,34 @@ class OscalModel(BaseModel):
     # def assemble_allowed_values(self) -> dict[str, list[datatypes.OscalDatatype]]:
 
     #     pass
+
+    def validate_fields(
+        self, allowed_values: dict[str, list[datatypes.OscalDatatype]]
+    ) -> list[FieldStatus]:
+        field_status: list[FieldStatus] = []
+        model_dict = self.model_dump()
+        for field in model_dict:
+            # Does allowed_values specify a value for this field?
+            if field in allowed_values:
+                # Does the allowed value match the field contents?
+                if model_dict[field] in [value.root for value in allowed_values[field]]:
+                    field_status.append(
+                        FieldStatus(field=field, status="match", error=None)
+                    )
+                # If not, record it as an error
+                else:
+                    error = FieldError(field, model_dict[field])
+                    field_status.append(
+                        FieldStatus(field=field, status="error", error=error)
+                    )
+            # IF the field is not present in the allowed values dict, the field is unchecked
+            else:
+                field_status.append(
+                    FieldStatus(field=field, status="unchecked", error=None)
+                )
+
+        # after cycling through all the fields, return the field status list
+        return field_status
 
     def field_errors(self, allowed_values: dict[str, list[Any]]) -> list[FieldError]:
         errors: list[FieldError] = []
