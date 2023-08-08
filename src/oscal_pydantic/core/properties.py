@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import base, datatypes
 
-from pydantic import Field, model_validator, ValidationInfo
+from pydantic import Field, model_validator, ValidationInfo, AnyUrl
 
 
 class BaseProperty(base.OscalModel):
@@ -27,7 +27,7 @@ class BaseProperty(base.OscalModel):
             A namespace qualifying the property's name. This allows different 
             organizations to associate distinct semantics with the same name.
             """,
-        default=datatypes.Uri("http://csrc.nist.gov/ns/oscal"),
+        default=datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
     )
     value: datatypes.String = Field(
         description="""
@@ -54,15 +54,20 @@ class OscalProperty(BaseProperty):
     @model_validator(mode="after")
     def validate_property(self, info: ValidationInfo) -> OscalProperty:
         allowed_values = {
-            "ns": [datatypes.Uri("http://csrc.nist.gov/ns/oscal")],
-            "name": [datatypes.Token("marking")],
+            "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
+            "name": [datatypes.Token(root="marking")],
         }
-        validation_results = self.validate_fields(allowed_values=allowed_values)
+        self._validation_results.extend(
+            self.validate_fields(allowed_values=allowed_values)
+        )
         errors = [
-            result.error for result in validation_results if result.error is not None
+            result.error
+            for result in self._validation_results
+            if result.error is not None
         ]
         if len(errors) > 0:
-            print(errors)
+            if type(self) == OscalProperty:
+                raise ValueError(errors)
 
         return self
 
@@ -71,16 +76,24 @@ class LocationProperty(OscalProperty):
     @model_validator(mode="after")
     def validate_location_property(self) -> LocationProperty:
         allowed_values = {
-            "name": [datatypes.Token("type")],
-            "value": [datatypes.String("data-center")],
-            "class": [datatypes.Token("primary"), datatypes.Token("alternate")],
+            "name": [datatypes.Token(root="type")],
+            "value": [datatypes.String(root="data-center")],
+            "class": [
+                datatypes.Token(root="primary"),
+                datatypes.Token(root="alternate"),
+            ],
         }
 
-        validation_results = self.validate_fields(allowed_values=allowed_values)
+        self._validation_results.extend(
+            self.validate_fields(allowed_values=allowed_values)
+        )
         errors = [
-            result.error for result in validation_results if result.error is not None
+            result.error
+            for result in self._validation_results
+            if result.error is not None
         ]
-        if len(errors) > 0:
-            print(errors)
+        print(self._validation_results)
+        if len(errors) > 0 and type(self) == LocationProperty:
+            raise ValueError(errors)
 
         return self

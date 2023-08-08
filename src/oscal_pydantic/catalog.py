@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from core import datatypes, common, base
+from .core import base, datatypes, common
 
 from pydantic import Field
-
-
-class CatalogProperty(common.Property):
-    pass
 
 
 class Parameter(base.OscalModel):

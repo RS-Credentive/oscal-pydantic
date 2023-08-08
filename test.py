@@ -13,3 +13,5 @@ loc_class = datatypes.Token("primary")
 test_loc = properties.LocationProperty(
     ns=ns, name=name, value=value, prop_class=loc_class
 )
+
+pass

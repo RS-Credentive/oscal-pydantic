@@ -7,6 +7,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 import re
+from typing import Optional
 
 from . import base, datatypes, properties
 
@@ -27,7 +28,7 @@ class Link(base.OscalModel):
             A resolvable URL reference to a resource.
         """,
     )
-    rel: datatypes.Token | None = Field(
+    rel: datatypes.Token = Field(
         description="""
             Describes the type of relationship provided by the link. 
             This can be an indicator of the link's purpose.
@@ -40,7 +41,7 @@ class Link(base.OscalModel):
         """,
         default=None,
     )
-    text: datatypes.MarkupLine | None = Field(
+    text: datatypes.MarkupLine = Field(
         description="""
             A textual label to associate with the link, which may be 
             used for presentation in a tool.
@@ -131,7 +132,7 @@ class Revision(base.OscalModel):
         if self.links is not None:
             for link in self.links:
                 if link.rel not in [
-                    datatypes.Token(relationship)
+                    datatypes.Token(root=relationship)
                     for relationship in allowed_relationships
                 ]:
                     raise ValueError(
@@ -188,7 +189,7 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
-    description: datatypes.MarkupMultiline | None = Field(
+    description: datatypes.MarkupMultiline = Field(
         description="""
             A summary of the role's purpose and associated responsibilities.
         """
@@ -291,7 +292,7 @@ class TelephoneNumber(base.OscalModel):
     def validate_telephone_number(self) -> TelephoneNumber:
         allowed_number_types = ["home", "office", "mobile"]
         if self.type is not None and self.type not in [
-            datatypes.String(num_type) for num_type in allowed_number_types
+            datatypes.String(root=num_type) for num_type in allowed_number_types
         ]:
             raise ValueError(
                 f"Invalid number type. Must be one of {[f'{type} ' for type in allowed_number_types]}"
@@ -300,7 +301,7 @@ class TelephoneNumber(base.OscalModel):
 
 
 class Location(base.OscalModel):
-    # DESCRIPTION A location, with associated metadata that can be referenced.
+    """# DESCRIPTION A location, with associated metadata that can be referenced.
 
     # Constraints (3)
     # ALLOWED VALUE for prop/@name
@@ -319,6 +320,7 @@ class Location(base.OscalModel):
 
     # primary: The location is a data-center used for normal operations.
     # alternate: The location is a data-center used for fail-over or backup operations.
+    """
 
     uuid: datatypes.UUID = Field(
         description="""
@@ -512,7 +514,7 @@ class Party(base.OscalModel):
         if self.props is not None:
             for prop in self.props:
                 if prop.name not in [
-                    datatypes.Token(name) for name in allowed_property_names
+                    datatypes.Token(root=name) for name in allowed_property_names
                 ]:
                     raise ValueError(
                         f"Property name must be one of {[f'{prop_name} ' for prop_name in allowed_property_names]}"
@@ -520,7 +522,7 @@ class Party(base.OscalModel):
 
         allowed_types = ["person", "organization"]
         if self.type is not None and self.type not in [
-            datatypes.String(type) for type in allowed_types
+            datatypes.String(root=type) for type in allowed_types
         ]:
             raise ValueError(
                 f"Type must be one of {[f'{type_name} ' for type_name in allowed_types]}"
@@ -579,7 +581,9 @@ class Metadata(base.OscalModel):
         description="""
             Last Modified Timestamp. If no value is provided, the current time will be inserted.
         """,
-        default=datetime.now(tz=timezone.utc).isoformat(),
+        default=datatypes.DateTimeWithTimezone(
+            root=datetime.now(tz=timezone.utc).isoformat()
+        ),
     )
     version: datatypes.String = Field(
         description="""
@@ -697,7 +701,7 @@ class Citation(base.OscalModel):
 
 
 class Hash(base.OscalModel):
-    algorithm: datatypes.String = Field(
+    algorithm: datatypes.String | None = Field(
         description="""
             Method by which a hash is derived
 
@@ -721,7 +725,7 @@ class Hash(base.OscalModel):
         """,
         default=None,
     )
-    value: datatypes.String = Field(
+    value: datatypes.String | None = Field(
         description="""
             The value of the hash
         """,
@@ -735,14 +739,14 @@ class ResourceLink(base.OscalModel):
             A resolvable URI reference to a resource.
         """,
     )
-    media_type: datatypes.String = Field(
+    media_type: datatypes.String | None = Field(
         description="""
             Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) 
             Media Types Registry.
         """,
         default=None,
     )
-    hashes: list[Hash] = Field(
+    hashes: list[Hash] | None = Field(
         description="""
             description
         """,
@@ -751,21 +755,21 @@ class ResourceLink(base.OscalModel):
 
 
 class Base64(base.OscalModel):
-    filename: datatypes.UriReference = Field(
+    filename: datatypes.UriReference | None = Field(
         description="""
             Name of the file before it was encoded as Base64 to be embedded in a resource. This is 
             the name that will be assigned to the file when the file is decoded.
         """,
         default=None,
     )
-    media_type: datatypes.String = Field(
+    media_type: datatypes.String | None = Field(
         description="""
             Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) 
             Media Types Registry.
         """,
         default=None,
     )
-    value: datatypes.Base64Binary = Field(
+    value: datatypes.Base64Binary | None = Field(
         description="""
             The Base64 encoded file.
         """,
