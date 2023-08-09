@@ -6,8 +6,8 @@
 
 from __future__ import annotations
 from datetime import datetime, timezone
+from collections import Counter
 import re
-from typing import Optional
 
 from . import base, datatypes, properties
 
@@ -459,7 +459,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.PartyProperty] | None = Field(
         description="""
             Additional properties related to the party
         """,
@@ -510,24 +510,16 @@ class Party(base.OscalModel):
 
     @model_validator(mode="after")
     def validate_party(self) -> Party:
-        allowed_property_names = ["mail-stop", "office", "job-title"]
-        if self.props is not None:
-            for prop in self.props:
-                if prop.name not in [
-                    datatypes.Token(root=name) for name in allowed_property_names
-                ]:
-                    raise ValueError(
-                        f"Property name must be one of {[f'{prop_name} ' for prop_name in allowed_property_names]}"
-                    )
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "type": [
+                    datatypes.String(root="person"),
+                    datatypes.String(root="organization"),
+                ]
+            }
+        ]
 
-        allowed_types = ["person", "organization"]
-        if self.type is not None and self.type not in [
-            datatypes.String(root=type) for type in allowed_types
-        ]:
-            raise ValueError(
-                f"Type must be one of {[f'{type_name} ' for type_name in allowed_types]}"
-            )
-        return self
+        return self.base_validator(calling_type=Party, allowed_values=allowed_values)
 
 
 class ResponsibleParty(base.OscalModel):
@@ -543,7 +535,7 @@ class ResponsibleParty(base.OscalModel):
             item locally or globally (e.g., in an imported OSCAL instance).
         """,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -613,7 +605,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar 
@@ -684,7 +676,7 @@ class Citation(base.OscalModel):
             A line of citation text.
         """,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An optional list of attributes, characteristics, or qualities of the containing object 
             expressed as a namespace qualified name/value pair. The value of a property is a simple 
@@ -773,6 +765,7 @@ class Base64(base.OscalModel):
         description="""
             The Base64 encoded file.
         """,
+        min_length=1,
         default=None,
     )
 
@@ -798,7 +791,7 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
-    props: list[Property] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An optional list of properties associated with the resource.
         """,
@@ -835,6 +828,24 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
+
+    @model_validator(mode="after")
+    def unique_rlink(self) -> Resource:
+        if self.rlinks is not None:
+            links_counter = Counter([rlink.href for rlink in self.rlinks])
+            duplicates = [item for item, count in links_counter.items() if count > 1]
+            if len(duplicates) > 0:
+                raise ValueError("Duplicate rlinks in %s: %s", self.uuid, duplicates)
+        return self
+
+    @model_validator(mode="after")
+    def unique_base64(self) -> Resource:
+        if self.base64 is not None:
+            b64_counter = Counter([b64.value for b64 in self.base64])
+            duplicates = [item for item, count in b64_counter.items() if count > 1]
+            if len(duplicates) > 0:
+                raise ValueError("Duplicate base64 items in %s", self.uuid)
+        return self
 
 
 class BackMatter(base.OscalModel):

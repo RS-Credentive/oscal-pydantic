@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import base, datatypes
 
-from pydantic import Field, model_validator, ValidationInfo, AnyUrl
+from pydantic import Field, model_validator, AnyUrl
 
 
 class BaseProperty(base.OscalModel):
@@ -52,48 +52,98 @@ class BaseProperty(base.OscalModel):
 
 class OscalProperty(BaseProperty):
     @model_validator(mode="after")
-    def validate_property(self, info: ValidationInfo) -> OscalProperty:
-        allowed_values = {
-            "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
-            "name": [datatypes.Token(root="marking")],
-        }
-        self._validation_results.extend(
-            self.validate_fields(allowed_values=allowed_values)
-        )
-        errors = [
-            result.error
-            for result in self._validation_results
-            if result.error is not None
+    def validate_oscal_property(self) -> OscalProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
+                "name": [datatypes.Token(root="marking")],
+            },
         ]
-        if len(errors) > 0:
-            if type(self) == OscalProperty:
-                raise ValueError(errors)
 
-        return self
+        return self.base_validator(
+            calling_type=OscalProperty, allowed_values=allowed_values
+        )
 
 
 class LocationProperty(OscalProperty):
     @model_validator(mode="after")
     def validate_location_property(self) -> LocationProperty:
-        allowed_values = {
-            "name": [datatypes.Token(root="type")],
-            "value": [datatypes.String(root="data-center")],
-            "class": [
-                datatypes.Token(root="primary"),
-                datatypes.Token(root="alternate"),
-            ],
-        }
-
-        self._validation_results.extend(
-            self.validate_fields(allowed_values=allowed_values)
-        )
-        errors = [
-            result.error
-            for result in self._validation_results
-            if result.error is not None
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [datatypes.Token(root="type")],
+                "value": [datatypes.String(root="data-center")],
+                "class": [
+                    datatypes.Token(root="primary"),
+                    datatypes.Token(root="alternate"),
+                ],
+            },
         ]
-        print(self._validation_results)
-        if len(errors) > 0 and type(self) == LocationProperty:
-            raise ValueError(errors)
 
-        return self
+        return self.base_validator(
+            calling_type=LocationProperty, allowed_values=allowed_values
+        )
+
+
+class PartyProperty(OscalProperty):
+    @model_validator(mode="after")
+    def validate_party_property(self) -> PartyProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.Token(root="mail-stop"),
+                    datatypes.Token(root="office"),
+                    datatypes.Token(root="job-title"),
+                ],
+            }
+        ]
+
+        return self.base_validator(
+            calling_type=PartyProperty, allowed_values=allowed_values
+        )
+
+
+class ResourceProperty(OscalProperty):
+    @model_validator(mode="after")
+    def validate_party_property(self) -> ResourceProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.Token(root="version"),
+                ],
+            },
+            {
+                "name": [
+                    datatypes.Token(root="type"),
+                ],
+                "value": [
+                    datatypes.String(root="logo"),
+                    datatypes.String(root="image"),
+                    datatypes.String(root="screen-shot"),
+                    datatypes.String(root="law"),
+                    datatypes.String(root="regulation"),
+                    datatypes.String(root="standard"),
+                    datatypes.String(root="external-guidance"),
+                    datatypes.String(root="acronyms"),
+                    datatypes.String(root="citation"),
+                    datatypes.String(root="policy"),
+                    datatypes.String(root="procedure"),
+                    datatypes.String(root="system-guide"),
+                    datatypes.String(root="users-guide"),
+                    datatypes.String(root="administrators-guide"),
+                    datatypes.String(root="rules-of-behavior"),
+                    datatypes.String(root="plan"),
+                    datatypes.String(root="artifact"),
+                    datatypes.String(root="evidence"),
+                    datatypes.String(root="tool-output"),
+                    datatypes.String(root="raw-data"),
+                    datatypes.String(root="interview-notes"),
+                    datatypes.String(root="questionnaire"),
+                    datatypes.String(root="report"),
+                    datatypes.String(root="agreement"),
+                ],
+            },
+        ]
+
+        return self.base_validator(
+            calling_type=ResourceProperty, allowed_values=allowed_values
+        )
