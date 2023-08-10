@@ -1,8 +1,9 @@
 from __future__ import annotations
+import warnings
 
 from . import base, datatypes
 
-from pydantic import Field, model_validator, AnyUrl
+from pydantic import Field, model_validator, AnyUrl, field_validator
 
 
 class BaseProperty(base.OscalModel):
@@ -52,7 +53,7 @@ class BaseProperty(base.OscalModel):
 
 class OscalProperty(BaseProperty):
     @model_validator(mode="after")
-    def validate_oscal_property(self) -> OscalProperty:
+    def validate_property(self) -> OscalProperty:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
@@ -67,7 +68,7 @@ class OscalProperty(BaseProperty):
 
 class LocationProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_location_property(self) -> LocationProperty:
+    def validate_property(self) -> LocationProperty:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [datatypes.Token(root="type")],
@@ -86,7 +87,7 @@ class LocationProperty(OscalProperty):
 
 class PartyProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_party_property(self) -> PartyProperty:
+    def validate_property(self) -> PartyProperty:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -104,7 +105,7 @@ class PartyProperty(OscalProperty):
 
 class ResourceProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_party_property(self) -> ResourceProperty:
+    def validate_property(self) -> ResourceProperty:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -147,3 +148,108 @@ class ResourceProperty(OscalProperty):
         return self.base_validator(
             calling_type=ResourceProperty, allowed_values=allowed_values
         )
+
+
+class RmfProperty(BaseProperty):
+    @model_validator(mode="after")
+    def validate_property(self) -> RmfProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [
+                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/rmf")),
+                ],
+            },
+        ]
+
+        return self.base_validator(
+            calling_type=RmfProperty, allowed_values=allowed_values
+        )
+
+
+class ParameterProperty(OscalProperty, RmfProperty):
+    @model_validator(mode="after")
+    def validate_property(self) -> ParameterProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [
+                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
+                ],
+                "name": [
+                    datatypes.Token(root="label"),
+                    datatypes.Token(root="sort-id"),
+                    datatypes.Token(root="alt-identifier"),
+                    datatypes.Token(root="alt-label"),
+                ],
+            },
+            {
+                "ns": [
+                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/rmf")),
+                ],
+                "name": [
+                    datatypes.Token(root="aggregates"),
+                ],
+            },
+        ]
+
+        return self.base_validator(
+            calling_type=ParameterProperty, allowed_values=allowed_values
+        )
+
+
+class PartProperty(OscalProperty):
+    @model_validator(mode="after")
+    def validate_property(self) -> PartProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [
+                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
+                ],
+                "name": [
+                    datatypes.Token(root="label"),
+                    datatypes.Token(root="sort-id"),
+                    datatypes.Token(root="alt-identifier"),
+                ],
+            },
+        ]
+
+        return self.base_validator(
+            calling_type=PartProperty, allowed_values=allowed_values
+        )
+
+
+class ControlProperty(OscalProperty):
+    @model_validator(mode="after")
+    def validate_property(self) -> ControlProperty:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.Token(root="label"),
+                    datatypes.Token(root="sort-id"),
+                    datatypes.Token(root="alt-identifier"),
+                ],
+            },
+            {
+                "name": [
+                    datatypes.Token(root="status"),
+                ],
+                "value": [
+                    datatypes.Token(root="Withdrawn"),  # deprecated
+                    datatypes.Token(root="withdrawn"),
+                ],
+            },
+        ]
+        return self.base_validator(
+            calling_type=PartProperty, allowed_values=allowed_values
+        )
+
+    @field_validator("value", mode="after")
+    @classmethod
+    def capitalized_withdrawn_deprecated(
+        cls, value: datatypes.Token
+    ) -> datatypes.Token:
+        # raise a deprecationwarning if value is capitalized
+        warnings.warn(
+            "'Warning' is a deprecated property value for Control. Use 'warning' instead",
+            DeprecationWarning,
+        )
+        return value

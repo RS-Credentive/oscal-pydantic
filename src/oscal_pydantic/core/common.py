@@ -41,11 +41,12 @@ class Link(base.OscalModel):
         """,
         default=None,
     )
-    text: datatypes.MarkupLine = Field(
+    text: datatypes.MarkupLine | None = Field(
         description="""
             A textual label to associate with the link, which may be 
             used for presentation in a tool.
         """,
+        default=None,
     )
 
 

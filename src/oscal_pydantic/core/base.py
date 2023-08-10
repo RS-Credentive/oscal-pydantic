@@ -16,6 +16,8 @@ AllowedValue: TypeAlias = dict[str, list[datatypes.OscalDatatype]]
 if TYPE_CHECKING:
     from pydantic.main import IncEx
 
+    pass_fail: TypeAlias = Literal["pass", "fail"]
+
 
 # To help with error reporting, we create a NamedTuple of the field, and the invalid value
 class FieldError(NamedTuple):
@@ -30,7 +32,7 @@ class FieldStatus(NamedTuple):
 
 
 class AllowedValueStatus(NamedTuple):
-    result: Literal["pass", "fail"]
+    result: pass_fail
     fields_status: list[FieldStatus]
 
 
@@ -115,7 +117,7 @@ class OscalModel(BaseModel):
         model_dict = self.model_dump()
         for allowed_value_dict in allowed_values:
             # Set an initial AllowedValueStatus
-            av_status_result = "pass"
+            av_status_result: pass_fail = "pass"
             av_field_status: list[FieldStatus] = []
             for field in model_dict:
                 # Does allowed_values specify a value for this field?
