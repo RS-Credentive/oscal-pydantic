@@ -97,7 +97,9 @@ class OscalModel(BaseModel):
     def base_validator(self, calling_type: type, allowed_values: list[AllowedValue]):
         self.validate_fields(allowed_values=allowed_values)
 
-        if "pass" in [result.result for result in self._validation_results]:
+        if len(self._validation_results) == 0 or "pass" in [
+            result.result for result in self._validation_results
+        ]:
             return self
         else:
             if type(self) == calling_type:
