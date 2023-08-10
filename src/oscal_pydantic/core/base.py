@@ -59,6 +59,7 @@ class OscalModel(BaseModel):
     """
 
     _validation_results: list[AllowedValueStatus] = PrivateAttr(default=[])
+    _allowed_values: list[AllowedValue] = PrivateAttr(default=[])
 
     model_config = ConfigDict(
         extra="forbid",
@@ -178,7 +179,7 @@ class OscalModel(BaseModel):
         # Create strings for each error, separated by newlines
         return "\n".join(
             [
-                f"Expected value {error.expected_value} for field {error.field}"
+                f"Expected value {error.expected_value.root} for field {error.field}"
                 for error in validation_errors
             ]
         )

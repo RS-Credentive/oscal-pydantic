@@ -1,11 +1,15 @@
 from src.oscal_pydantic.core import datatypes, properties
 
-ns = datatypes.Uri("http://csrc.nist.gov/ns/oscal")
+ns = datatypes.Uri(root="http://csrc.nist.gov/ns/oscal")
 name = datatypes.Token("marking")
 value = datatypes.String("test")
 
+oscal_prop_dict = {"name": "marking", "value": "test"}
+
 # Should Succeed
-test_prop = properties.OscalProperty(ns=ns, name=name, value=value)
+# test_prop = properties.OscalProperty.model_validate(oscal_prop_dict)
+
+test_prop = properties.OscalProperty(name="marking", value="test")
 
 # Should also succeed
 test_prop_loc = properties.LocationProperty(name=name, value=value)

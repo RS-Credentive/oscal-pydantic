@@ -1,5 +1,6 @@
 from __future__ import annotations
 import warnings
+import typing
 
 from . import base, datatypes
 
@@ -52,17 +53,25 @@ class BaseProperty(base.OscalModel):
 
 
 class OscalProperty(BaseProperty):
+    # def __init__(self, **data: typing.Any) -> None:
+    #     super().__init__(**data)
+    #     _allowed_values = [
+    #         {
+    #             "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
+    #             "name": [datatypes.Token(root="marking")],
+    #         },
+    #     ]
+
     @model_validator(mode="after")
     def validate_property(self) -> OscalProperty:
-        allowed_values: list[base.AllowedValue] = [
+        _allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal"))],
                 "name": [datatypes.Token(root="marking")],
             },
         ]
-
         return self.base_validator(
-            calling_type=OscalProperty, allowed_values=allowed_values
+            calling_type=OscalProperty, allowed_values=_allowed_values
         )
 
 
@@ -87,7 +96,7 @@ class LocationProperty(OscalProperty):
 
 class PartyProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> PartyProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -105,7 +114,7 @@ class PartyProperty(OscalProperty):
 
 class ResourceProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> ResourceProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -152,7 +161,7 @@ class ResourceProperty(OscalProperty):
 
 class RmfProperty(BaseProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> RmfProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
@@ -168,7 +177,7 @@ class RmfProperty(BaseProperty):
 
 class ParameterProperty(OscalProperty, RmfProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> ParameterProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
@@ -198,7 +207,7 @@ class ParameterProperty(OscalProperty, RmfProperty):
 
 class PartProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> PartProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
@@ -219,7 +228,7 @@ class PartProperty(OscalProperty):
 
 class ControlProperty(OscalProperty):
     @model_validator(mode="after")
-    def validate_property(self) -> ControlProperty:
+    def validate_property(self) -> typing.Self:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
