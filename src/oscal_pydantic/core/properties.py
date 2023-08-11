@@ -180,39 +180,43 @@ class RmfProperty(BaseProperty):
 
 
 class ParameterProperty(OscalProperty, RmfProperty):
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.extend(
+            [
+                {
+                    "ns": [
+                        datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
+                    ],
+                    "name": [
+                        datatypes.Token(root="label"),
+                        datatypes.Token(root="sort-id"),
+                        datatypes.Token(root="alt-identifier"),
+                        datatypes.Token(root="alt-label"),
+                    ],
+                },
+                {
+                    "ns": [
+                        datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/rmf")),
+                    ],
+                    "name": [
+                        datatypes.Token(root="aggregates"),
+                    ],
+                },
+            ]
+        )
+
     @model_validator(mode="after")
     def validate_parameter_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "ns": [
-                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
-                ],
-                "name": [
-                    datatypes.Token(root="label"),
-                    datatypes.Token(root="sort-id"),
-                    datatypes.Token(root="alt-identifier"),
-                    datatypes.Token(root="alt-label"),
-                ],
-            },
-            {
-                "ns": [
-                    datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/rmf")),
-                ],
-                "name": [
-                    datatypes.Token(root="aggregates"),
-                ],
-            },
-        ]
-
         return self.base_validator(
             calling_type=ParameterProperty, allowed_values=allowed_values
         )
 
 
 class PartProperty(OscalProperty):
-    @model_validator(mode="after")
-    def validate_part_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.append(
             {
                 "ns": [
                     datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/oscal")),
@@ -223,36 +227,43 @@ class PartProperty(OscalProperty):
                     datatypes.Token(root="alt-identifier"),
                 ],
             },
-        ]
+        )
 
+    @model_validator(mode="after")
+    def validate_part_property(self) -> typing.Self:
         return self.base_validator(
             calling_type=PartProperty, allowed_values=allowed_values
         )
 
 
 class ControlProperty(OscalProperty):
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.extend(
+            [
+                {
+                    "name": [
+                        datatypes.Token(root="label"),
+                        datatypes.Token(root="sort-id"),
+                        datatypes.Token(root="alt-identifier"),
+                    ],
+                },
+                {
+                    "name": [
+                        datatypes.Token(root="status"),
+                    ],
+                    "value": [
+                        datatypes.Token(root="Withdrawn"),  # deprecated
+                        datatypes.Token(root="withdrawn"),
+                    ],
+                },
+            ]
+        )
+
     @model_validator(mode="after")
     def validate_control_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "name": [
-                    datatypes.Token(root="label"),
-                    datatypes.Token(root="sort-id"),
-                    datatypes.Token(root="alt-identifier"),
-                ],
-            },
-            {
-                "name": [
-                    datatypes.Token(root="status"),
-                ],
-                "value": [
-                    datatypes.Token(root="Withdrawn"),  # deprecated
-                    datatypes.Token(root="withdrawn"),
-                ],
-            },
-        ]
         return self.base_validator(
-            calling_type=PartProperty, allowed_values=allowed_values
+            calling_type=PartProperty, allowed_values=self._allowed_values
         )
 
     @field_validator("value", mode="after")
