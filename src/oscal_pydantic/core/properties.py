@@ -91,9 +91,9 @@ class LocationProperty(OscalProperty):
 
 
 class PartyProperty(OscalProperty):
-    @model_validator(mode="after")
-    def validate_party_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.append(
             {
                 "name": [
                     datatypes.Token(root="mail-stop"),
@@ -101,73 +101,81 @@ class PartyProperty(OscalProperty):
                     datatypes.Token(root="job-title"),
                 ],
             }
-        ]
+        )
 
+    @model_validator(mode="after")
+    def validate_party_property(self) -> typing.Self:
         return self.base_validator(
-            calling_type=PartyProperty, allowed_values=allowed_values
+            calling_type=PartyProperty, allowed_values=self._allowed_values
         )
 
 
 class ResourceProperty(OscalProperty):
-    @model_validator(mode="after")
-    def validate_resource_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "name": [
-                    datatypes.Token(root="version"),
-                ],
-            },
-            {
-                "name": [
-                    datatypes.Token(root="type"),
-                ],
-                "value": [
-                    datatypes.String(root="logo"),
-                    datatypes.String(root="image"),
-                    datatypes.String(root="screen-shot"),
-                    datatypes.String(root="law"),
-                    datatypes.String(root="regulation"),
-                    datatypes.String(root="standard"),
-                    datatypes.String(root="external-guidance"),
-                    datatypes.String(root="acronyms"),
-                    datatypes.String(root="citation"),
-                    datatypes.String(root="policy"),
-                    datatypes.String(root="procedure"),
-                    datatypes.String(root="system-guide"),
-                    datatypes.String(root="users-guide"),
-                    datatypes.String(root="administrators-guide"),
-                    datatypes.String(root="rules-of-behavior"),
-                    datatypes.String(root="plan"),
-                    datatypes.String(root="artifact"),
-                    datatypes.String(root="evidence"),
-                    datatypes.String(root="tool-output"),
-                    datatypes.String(root="raw-data"),
-                    datatypes.String(root="interview-notes"),
-                    datatypes.String(root="questionnaire"),
-                    datatypes.String(root="report"),
-                    datatypes.String(root="agreement"),
-                ],
-            },
-        ]
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.extend(
+            [
+                {
+                    "name": [
+                        datatypes.Token(root="version"),
+                    ],
+                },
+                {
+                    "name": [
+                        datatypes.Token(root="type"),
+                    ],
+                    "value": [
+                        datatypes.String(root="logo"),
+                        datatypes.String(root="image"),
+                        datatypes.String(root="screen-shot"),
+                        datatypes.String(root="law"),
+                        datatypes.String(root="regulation"),
+                        datatypes.String(root="standard"),
+                        datatypes.String(root="external-guidance"),
+                        datatypes.String(root="acronyms"),
+                        datatypes.String(root="citation"),
+                        datatypes.String(root="policy"),
+                        datatypes.String(root="procedure"),
+                        datatypes.String(root="system-guide"),
+                        datatypes.String(root="users-guide"),
+                        datatypes.String(root="administrators-guide"),
+                        datatypes.String(root="rules-of-behavior"),
+                        datatypes.String(root="plan"),
+                        datatypes.String(root="artifact"),
+                        datatypes.String(root="evidence"),
+                        datatypes.String(root="tool-output"),
+                        datatypes.String(root="raw-data"),
+                        datatypes.String(root="interview-notes"),
+                        datatypes.String(root="questionnaire"),
+                        datatypes.String(root="report"),
+                        datatypes.String(root="agreement"),
+                    ],
+                },
+            ]
+        )
 
+    @model_validator(mode="after")
+    def validate_resource_property(self) -> ResourceProperty:
         return self.base_validator(
-            calling_type=ResourceProperty, allowed_values=allowed_values
+            calling_type=ResourceProperty, allowed_values=self._allowed_values
         )
 
 
 class RmfProperty(BaseProperty):
-    @model_validator(mode="after")
-    def validate_rmf_property(self) -> typing.Self:
-        allowed_values: list[base.AllowedValue] = [
+    def __init__(self, **data: typing.Any) -> None:
+        super().__init__(**data)
+        self._allowed_values.append(
             {
                 "ns": [
                     datatypes.Uri(root=AnyUrl("http://csrc.nist.gov/ns/rmf")),
                 ],
             },
-        ]
+        )
 
+    @model_validator(mode="after")
+    def validate_rmf_property(self) -> typing.Self:
         return self.base_validator(
-            calling_type=RmfProperty, allowed_values=allowed_values
+            calling_type=RmfProperty, allowed_values=self._allowed_values
         )
 
 

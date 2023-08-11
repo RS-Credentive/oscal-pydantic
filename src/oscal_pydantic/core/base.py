@@ -6,7 +6,7 @@ from pydantic import (
     PrivateAttr,
 )
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any
 
 
 from . import datatypes
@@ -58,8 +58,8 @@ class OscalModel(BaseModel):
         * Custom __init__ that supports definition of contextvars for constraints
     """
 
-    _validation_results: list[AllowedValueStatus] = PrivateAttr(default=[])
-    _allowed_values: list[AllowedValue] = PrivateAttr(default=[])
+    _validation_results: list[AllowedValueStatus] = PrivateAttr()
+    _allowed_values: list[AllowedValue] = PrivateAttr()
 
     model_config = ConfigDict(
         extra="forbid",
@@ -67,6 +67,11 @@ class OscalModel(BaseModel):
         validate_assignment=True,
         alias_generator=oscal_aliases,
     )
+
+    def __init__(self, **data: Any) -> None:
+        super().__init__(**data)
+        self._validation_results = []
+        self._allowed_values = []
 
     # Override default model_dump_json to include indentation, exclude null values and always use alias
     def model_dump_json(
@@ -95,30 +100,10 @@ class OscalModel(BaseModel):
         )
 
     def base_validator(self, calling_type: type, allowed_values: list[AllowedValue]):
-        self.validate_fields(allowed_values=allowed_values)
-
-        if len(self._validation_results) == 0 or "pass" in [
-            result.result for result in self._validation_results
-        ]:
-            return self
-        else:
-            if type(self) == calling_type:
-                raise ValueError(
-                    self.print_validation_errors(
-                        validation_errors=self.validation_errors()
-                    )
-                )
-            else:
-                # This may be called from a subclass. If so, return control up
-                return self
-
-    def validate_fields(
-        self,
-        allowed_values: list[dict[str, list[datatypes.OscalDatatype]]],
-    ) -> None:
+        # self.validate_fields(allowed_values=allowed_values)
         av_status: list[AllowedValueStatus] = []
         model_dict = self.model_dump()
-        for allowed_value_dict in allowed_values:
+        for allowed_value_dict in self._allowed_values:
             # Set an initial AllowedValueStatus
             av_status_result: pass_fail = "pass"
             av_field_status: list[FieldStatus] = []
@@ -159,6 +144,21 @@ class OscalModel(BaseModel):
 
         # Finally, add the list of AllowedValueStatus results created to our private Attribute
         self._validation_results.extend(av_status)
+
+        if len(self._validation_results) == 0 or "pass" in [
+            result.result for result in self._validation_results
+        ]:
+            return self
+        else:
+            if type(self) == calling_type:
+                raise ValueError(
+                    self.print_validation_errors(
+                        validation_errors=self.validation_errors()
+                    )
+                )
+            else:
+                # This may be called from a subclass. If so, return control up
+                return self
 
     def validation_errors(self) -> list[FieldError]:
         final_errors: list[FieldError] = []
