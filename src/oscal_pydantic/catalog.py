@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .core import base, common, datatypes, discriminated_properties
+from .core import base, common, datatypes, properties
 
 from pydantic import Field, field_validator, AnyUrl
 
@@ -79,9 +79,9 @@ class Select(base.OscalModel):
 
 ParameterProperty = Annotated[
     Union[
-        discriminated_properties.OscalProperty,
-        discriminated_properties.OscalParameterProperty,
-        discriminated_properties.RmfParameterProperty,
+        properties.OscalProperty,
+        properties.OscalParameterProperty,
+        properties.RmfParameterProperty,
     ],
     Field(discriminator="name"),
 ]
@@ -209,7 +209,7 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[discriminated_properties.OscalProperty] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -299,8 +299,7 @@ class Control(base.OscalModel):
         default=None,
     )
     props: list[
-        discriminated_properties.OscalProperty
-        | discriminated_properties.ControlPartProperty
+        properties.OscalProperty | properties.ControlPartProperty
     ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
@@ -355,7 +354,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[discriminated_properties.OscalProperty] | None = Field(
+    props: list[properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.

@@ -1,12 +1,10 @@
 from __future__ import annotations
 import warnings
-from typing import ClassVar
+import typing
 
-from . import base, datatypes
+from . import base, datatypes, datatypes_rootmodels
 
 from pydantic import Field, field_validator
-
-AllowedValueList = list[dict[str, list[datatypes.OscalDatatype]]]
 
 
 class BaseProperty(base.OscalModel):
@@ -55,154 +53,82 @@ class BaseProperty(base.OscalModel):
 
 
 class OscalProperty(BaseProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
-            "name": [datatypes.OscalToken("marking")],
-        },
-    ]
+    name: typing.Literal["marking"]
 
 
-class LocationProperty(OscalProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "name": [datatypes.OscalToken("type")],
-            "value": [datatypes.OscalString("data-center")],
-            "class": [
-                datatypes.OscalToken("primary"),
-                datatypes.OscalToken("alternate"),
-            ],
-        },
-    ]
+class LocationProperty(BaseProperty):
+    name: typing.Literal["type"]
+    value: typing.Literal["data-center"]
+    property_class: typing.Literal["primary", "alternate"]
 
 
-class PartyProperty(OscalProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "name": [
-                datatypes.OscalToken("mail-stop"),
-                datatypes.OscalToken("office"),
-                datatypes.OscalToken("job-title"),
-            ],
-        }
-    ]
+class PartyProperty(BaseProperty):
+    name: typing.Literal["mail-stop", "office", "job-title"]
 
 
-class ResourceProperty(OscalProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "name": [
-                datatypes.OscalToken("version"),
-            ],
-        },
-        {
-            "name": [
-                datatypes.OscalToken("type"),
-            ],
-            "value": [
-                datatypes.OscalString("logo"),
-                datatypes.OscalString("image"),
-                datatypes.OscalString("screen-shot"),
-                datatypes.OscalString("law"),
-                datatypes.OscalString("regulation"),
-                datatypes.OscalString("standard"),
-                datatypes.OscalString("external-guidance"),
-                datatypes.OscalString("acronyms"),
-                datatypes.OscalString("citation"),
-                datatypes.OscalString("policy"),
-                datatypes.OscalString("procedure"),
-                datatypes.OscalString("system-guide"),
-                datatypes.OscalString("users-guide"),
-                datatypes.OscalString("administrators-guide"),
-                datatypes.OscalString("rules-of-behavior"),
-                datatypes.OscalString("plan"),
-                datatypes.OscalString("artifact"),
-                datatypes.OscalString("evidence"),
-                datatypes.OscalString("tool-output"),
-                datatypes.OscalString("raw-data"),
-                datatypes.OscalString("interview-notes"),
-                datatypes.OscalString("questionnaire"),
-                datatypes.OscalString("report"),
-                datatypes.OscalString("agreement"),
-            ],
-        },
+class ResourceProperty(BaseProperty):
+    name: typing.Literal["version"]
+    value: typing.Literal[
+        "logo",
+        "image",
+        "screen-shot",
+        "law",
+        "regulation",
+        "standard",
+        "external-guidance",
+        "acronyms",
+        "citation",
+        "policy",
+        "procedure",
+        "system-guide",
+        "users-guide",
+        "administrators-guide",
+        "rules-of-behavior",
+        "plan",
+        "artifact",
+        "evidence",
+        "tool-output",
+        "raw-data" "interview-notes",
+        "questionnaire",
+        "report",
+        "agreement",
     ]
 
 
 class RmfProperty(BaseProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/rmf"),
-            ],
-        },
+    ns: datatypes.OscalUri = datatypes.OscalUri("http://csrc.nist.gov/ns/rmf")
+
+
+class OscalParameterProperty(BaseProperty):
+    name: typing.Literal[
+        "label",
+        "sort-id",
+        "alt-identifier",
+        "alt-label",
     ]
 
 
-class ParameterProperty(OscalProperty, RmfProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
-            ],
-            "name": [
-                datatypes.OscalToken("label"),
-                datatypes.OscalToken("sort-id"),
-                datatypes.OscalToken("alt-identifier"),
-                datatypes.OscalToken("alt-label"),
-            ],
-        },
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/rmf"),
-            ],
-            "name": [
-                datatypes.OscalToken("aggregates"),
-            ],
-        },
+class RmfParameterProperty(RmfProperty):
+    name: typing.Literal["aggregates"]
+
+
+class ControlPartProperty(BaseProperty):
+    name: typing.Literal[
+        "label",
+        "sort-id",
+        "alt-identifier",
     ]
 
 
-class PartProperty(OscalProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
-            ],
-            "name": [
-                datatypes.OscalToken("label"),
-                datatypes.OscalToken("sort-id"),
-                datatypes.OscalToken("alt-identifier"),
-            ],
-        },
-    ]
-
-
-class ControlProperty(OscalProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "name": [
-                datatypes.OscalToken("label"),
-                datatypes.OscalToken("sort-id"),
-                datatypes.OscalToken("alt-identifier"),
-            ],
-        },
-        {
-            "name": [
-                datatypes.OscalToken("status"),
-            ],
-            "value": [
-                datatypes.OscalToken("Withdrawn"),  # deprecated
-                datatypes.OscalToken("withdrawn"),
-            ],
-        },
-    ]
+class WithdrawnControlProperty(BaseProperty):
+    name: typing.Literal["status"]
+    value: typing.Literal["withdrawn", "Withdrawn"]
 
     @field_validator("value", mode="after")
     @classmethod
     def capitalized_withdrawn_deprecated(
-        cls, value: datatypes.OscalToken
-    ) -> datatypes.OscalToken:
+        cls, value: datatypes_rootmodels.Token
+    ) -> datatypes_rootmodels.Token:
         # raise a deprecationwarning if value is capitalized
         warnings.warn(
             "'Warning' is a deprecated property value for Control. Use 'warning' instead",
