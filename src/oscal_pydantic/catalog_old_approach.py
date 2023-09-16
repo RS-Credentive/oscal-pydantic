@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .core import base, common, datatypes, properties
+from .core import base, common, datatypes, properties_old_approach
 
 from pydantic import Field, field_validator, model_validator, AnyUrl
 
@@ -102,7 +102,7 @@ class Parameter(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[properties_old_approach.BaseProperty] | None = Field(
         description="""
             Parameters provide a mechanism for the dynamic assignment of value(s) in a control.
         """,
@@ -206,7 +206,7 @@ class GenericPart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[properties_old_approach.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -331,7 +331,7 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[properties_old_approach.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -385,7 +385,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[properties_old_approach.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
