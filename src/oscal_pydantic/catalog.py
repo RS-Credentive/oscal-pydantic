@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from .core import base, common, datatypes, properties
+from .core import base, common, datatypes, discriminated_properties
 
-from pydantic import Field, field_validator, model_validator, AnyUrl
+from pydantic import Field, field_validator, AnyUrl
+
+from typing import Annotated, Union, Literal
 
 import warnings
 
@@ -75,6 +77,16 @@ class Select(base.OscalModel):
             return how_many
 
 
+ParameterProperty = Annotated[
+    Union[
+        discriminated_properties.OscalProperty,
+        discriminated_properties.OscalParameterProperty,
+        discriminated_properties.RmfParameterProperty,
+    ],
+    Field(discriminator="name"),
+]
+
+
 class Parameter(base.OscalModel):
     id: datatypes.OscalToken = Field(
         description="A unique identifier for the parameter"
@@ -93,7 +105,7 @@ class Parameter(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[ParameterProperty] | None = Field(
         description="""
             Parameters provide a mechanism for the dynamic assignment of value(s) in a control.
         """,
@@ -161,7 +173,7 @@ class Parameter(base.OscalModel):
         return depends_on
 
 
-class GenericPart(base.OscalModel):
+class BasePart(base.OscalModel):
     # Parts come in a few flavors - this GenericPart defines the field, and the subclasses provide
     # appropriate validation
     # TODO: make this an abstract base class
@@ -197,7 +209,7 @@ class GenericPart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[discriminated_properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -210,7 +222,7 @@ class GenericPart(base.OscalModel):
         """,
         default=None,
     )
-    parts: list[Part | NestedPart] | None = Field(
+    parts: list[NestedPart] | None = Field(
         description="""
             An annotated, markup-based textual element of a control's or catalog group's definition, or 
             a child of another part.
@@ -224,39 +236,6 @@ class GenericPart(base.OscalModel):
         default=None,
     )
 
-
-class Part(GenericPart):
-    allowed_values: list[base.AllowedValue] = [
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
-            ],
-            "name": [
-                datatypes.OscalToken("overview"),
-                datatypes.OscalToken("statement"),
-                datatypes.OscalToken("guidance"),
-                datatypes.OscalToken("assessment"),
-                datatypes.OscalToken("assessment-method"),
-            ],
-        }
-    ]
-
-    @model_validator(mode="after")
-    def validate_nested_part(self) -> Part:
-        if self.parts is not None:
-            for sub_part in self.parts:
-                if (
-                    sub_part.name == datatypes.OscalToken("statement")
-                    and sub_part.parts is not None
-                ):
-                    for nested_part in sub_part.parts:
-                        if type(nested_part) != NestedPart:
-                            raise ValueError(
-                                "Nested parts under a Part with name 'statement' can only have a name value of 'item'"
-                            )
-
-        return self
-
     @field_validator("name", mode="after")
     @classmethod
     def assessment_deprecated(cls, name: datatypes.OscalToken) -> datatypes.OscalToken:
@@ -268,30 +247,27 @@ class Part(GenericPart):
         return name
 
 
-class NestedPart(GenericPart):
-    allowed_values: list[base.AllowedValue] = [
-        {
-            "ns": [
-                datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
-            ],
-            "name": [
-                datatypes.OscalToken("item"),
-            ],
-        }
+class Part(BasePart):
+    name: Literal[
+        "overview",
+        "statement",
+        "guidance",
+        "assessment",
+        "assessment-method",
     ]
 
 
+class NestedPart(BasePart):
+    name: Literal["item"]
+
+
 class ControlLink(common.Link):
-    allowed_values: list[base.AllowedValue] = [
-        {
-            "rel": [
-                datatypes.OscalToken("reference"),
-                datatypes.OscalToken("related"),
-                datatypes.OscalToken("required"),
-                datatypes.OscalToken("incorporated-into"),
-                datatypes.OscalToken("moved-to"),
-            ]
-        }
+    rel: Literal[
+        "reference",
+        "related",
+        "required",
+        "incorporated-into",
+        "moved-to",
     ]
 
 
@@ -322,7 +298,10 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[
+        discriminated_properties.OscalProperty
+        | discriminated_properties.ControlPartProperty
+    ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -376,7 +355,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[discriminated_properties.OscalProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
