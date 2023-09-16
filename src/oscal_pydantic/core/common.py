@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from collections import Counter
 import re
 
+import typing
+
 from . import base, datatypes, properties
 
 from pydantic import (
@@ -23,31 +25,40 @@ class Link(base.OscalModel):
     # INDEX HAS KEY for .[@rel=('reference') and starts-with(@href,'#')]this value must correspond to a listing in the index index-back-matter-resource using a key constructed of key field(s) @href
     # MATCHES for .[@rel=('reference') and not(starts-with(@href,'#'))]/@href: the target value must match the lexical form of the 'uri' data type.
 
-    href: datatypes.UriReference = Field(
+    href: datatypes.OscalUriReference = Field(
         description="""
             A resolvable URL reference to a resource.
         """,
     )
-    rel: datatypes.Token = Field(
+    rel: datatypes.OscalToken = Field(
         description="""
             Describes the type of relationship provided by the link. 
             This can be an indicator of the link's purpose.
         """
     )
-    media_type: datatypes.String | None = Field(
+    media_type: datatypes.OscalString | None = Field(
         description="""
             Specifies a media type as defined by the Internet Assigned 
             Numbers Authority (IANA) Media Types Registry.
         """,
         default=None,
     )
-    text: datatypes.MarkupLine | None = Field(
+    text: datatypes.OscalMarkupLine | None = Field(
         description="""
             A textual label to associate with the link, which may be 
             used for presentation in a tool.
         """,
         default=None,
     )
+
+
+class RevisionLink(Link):
+    rel: typing.Literal[
+        "canonical",
+        "alternate",
+        "predecessor-version",
+        "successor-version",
+    ]
 
 
 class Revision(base.OscalModel):
@@ -61,34 +72,34 @@ class Revision(base.OscalModel):
     # predecessor-version: This link identifies a resource containing the predecessor version in the version history. Defined by RFC 5829.
     # successor-version: This link identifies a resource containing the predecessor version in the version history. Defined by RFC 5829.
 
-    title: datatypes.MarkupLine | None = Field(
+    title: datatypes.OscalMarkupLine | None = Field(
         description="""
             A name given to the document revision, which may be used by a tool 
             for display and navigation.
         """,
         default=None,
     )
-    published: datatypes.DateTimeWithTimezone | None = Field(
+    published: datatypes.OscalDateTimeWithTimezone | None = Field(
         description="""
             The date and time the document was published. The date-time value must 
             be formatted according to RFC 3339 with full time and time zone included.
         """,
         default=None,
     )
-    last_modified: datatypes.DateTimeWithTimezone | None = Field(
+    last_modified: datatypes.OscalDateTimeWithTimezone | None = Field(
         description="""
             The date and time the document was last modified. The date-time value must 
             be formatted according to RFC 3339 with full time and time zone included.
         """,
         default=None,
     )
-    version: datatypes.String = Field(
+    version: datatypes.OscalString = Field(
         description="""
             A string used to distinguish the current version of the document from other 
             previous (and future) versions.
         """,
     )
-    oscal_version: datatypes.String = Field(
+    oscal_version: datatypes.OscalString = Field(
         description="""
             The OSCAL model version the document was authored against.
         """,
@@ -109,41 +120,22 @@ class Revision(base.OscalModel):
         """,
         default=None,
     )
-    links: list[Link] | None = Field(
+    links: list[RevisionLink] | None = Field(
         description="""
             A reference to a local or remote resource.
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
         default=None,
     )
 
-    @model_validator(mode="after")
-    def validate_revision(self) -> Revision:
-        allowed_relationships = [
-            "canonical",
-            "alternate",
-            "predecessor-version",
-            "successor-version",
-        ]
-        if self.links is not None:
-            for link in self.links:
-                if link.rel not in [
-                    datatypes.Token(root=relationship)
-                    for relationship in allowed_relationships
-                ]:
-                    raise ValueError(
-                        f"link/@rel must be one of {[f'{rel} ' for rel in allowed_relationships]}"
-                    )
-        return self
-
 
 class DocumentID(base.OscalModel):
-    scheme: datatypes.Uri | None = Field(
+    scheme: datatypes.OscalUri | None = Field(
         description="""
             Qualifies the kind of document identifier using a URI. If the scheme is not provided 
             the value of the element will be interpreted as a string of characters.
@@ -155,7 +147,7 @@ class DocumentID(base.OscalModel):
         """,
         default=None,
     )
-    identifier: datatypes.String | None = Field(
+    identifier: datatypes.OscalString | None = Field(
         description="""
             This element is optional, but it will always have a valid value, as if it is missing 
             the value of "document-id" is assumed to be equal to the UUID of the root. This 
@@ -168,7 +160,7 @@ class DocumentID(base.OscalModel):
 
 
 class Role(base.OscalModel):
-    id: datatypes.Token = Field(
+    id: datatypes.OscalToken = Field(
         description="""
             A human-oriented, locally unique identifier with cross-instance scope that can be used 
             to reference this defined role elsewhere in this or other OSCAL instances. When 
@@ -179,21 +171,22 @@ class Role(base.OscalModel):
             identify the same subject across revisions of the document.
         """,
     )
-    title: datatypes.MarkupLine = Field(
+    title: datatypes.OscalMarkupLine = Field(
         description="""
             A name given to the role, which may be used by a tool for display and navigation.
         """,
     )
-    short_name: datatypes.String | None = Field(
+    short_name: datatypes.OscalString | None = Field(
         description="""
             A short common name, abbreviation, or acronym for the role.
         """,
         default=None,
     )
-    description: datatypes.MarkupMultiline = Field(
+    description: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             A summary of the role's purpose and associated responsibilities.
-        """
+        """,
+        default=None,
     )
     props: list[properties.BaseProperty] | None = Field(
         description="""
@@ -209,7 +202,7 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
@@ -218,37 +211,37 @@ class Role(base.OscalModel):
 
 
 class Address(base.OscalModel):
-    type: datatypes.Token | None = Field(
+    type: datatypes.OscalToken | None = Field(
         description="""
             Indicates the type of address.
         """,
         default=None,
     )
-    addr_lines: list[datatypes.String] | None = Field(
+    addr_lines: list[datatypes.OscalString] | None = Field(
         description="""
             A list of Address Line: A single line of an address.       
         """,
         default=None,
     )
-    city: datatypes.String | None = Field(
+    city: datatypes.OscalString | None = Field(
         description="""
             City, town or geographical region for the mailing address.
         """,
         default=None,
     )
-    state: datatypes.String | None = Field(
+    state: datatypes.OscalString | None = Field(
         description="""
                 State, province or analogous geographical region for mailing address
             """,
         default=None,
     )
-    postal_code: datatypes.String | None = Field(
+    postal_code: datatypes.OscalString | None = Field(
         description="""
             Postal or ZIP code for mailing address
         """,
         default=None,
     )
-    country: datatypes.String | None = Field(
+    country: datatypes.OscalString | None = Field(
         description="""
             The ISO 3166-1 alpha-2 country code for the mailing address.
         """,
@@ -257,7 +250,7 @@ class Address(base.OscalModel):
 
     @model_validator(mode="after")
     def two_letter_country_code(self) -> Address:
-        if self.country is not None and re.match("[A-Z]{2}", self.country.root) == None:
+        if self.country is not None and re.match("[A-Z]{2}", self.country) == None:
             raise ValueError("country string must have 2 letters")
         return self
 
@@ -270,7 +263,7 @@ class TelephoneNumber(base.OscalModel):
         number (datatype.String): the phone number
     """
 
-    type: datatypes.String | None = Field(
+    type: typing.Literal["home", "office", "mobile"] | None = Field(
         description="""
                 Indicates the type of phone number. 
 
@@ -282,23 +275,12 @@ class TelephoneNumber(base.OscalModel):
             """,
         default=None,
     )
-    number: datatypes.String | None = Field(
+    number: datatypes.OscalString | None = Field(
         description="""
             The phone number
         """,
         default=None,
     )
-
-    @model_validator(mode="after")
-    def validate_telephone_number(self) -> TelephoneNumber:
-        allowed_number_types = ["home", "office", "mobile"]
-        if self.type is not None and self.type not in [
-            datatypes.String(root=num_type) for num_type in allowed_number_types
-        ]:
-            raise ValueError(
-                f"Invalid number type. Must be one of {[f'{type} ' for type in allowed_number_types]}"
-            )
-        return self
 
 
 class Location(base.OscalModel):
@@ -323,7 +305,7 @@ class Location(base.OscalModel):
     # alternate: The location is a data-center used for fail-over or backup operations.
     """
 
-    uuid: datatypes.UUID = Field(
+    uuid: datatypes.OscalUUID = Field(
         description="""
             A machine-oriented, globally unique identifier with cross-instance scope that can be 
             used to reference this defined location elsewhere in this or other OSCAL instances. 
@@ -333,7 +315,7 @@ class Location(base.OscalModel):
             subject across revisions of the document.
         """
     )
-    title: datatypes.MarkupLine | None = Field(
+    title: datatypes.OscalMarkupLine | None = Field(
         description="""
             A name given to the location, which may be used by a tool for display and navigation.
         """,
@@ -344,7 +326,7 @@ class Location(base.OscalModel):
             A postal Address for the location
         """,
     )
-    email_addresses: list[datatypes.Email] | None = Field(
+    email_addresses: list[datatypes.OscalEmail] | None = Field(
         description="""
             An email address as defined by RFC 5322 Section 3.4.1
         """,
@@ -356,14 +338,14 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    urls: list[datatypes.Uri] | None = Field(
+    urls: list[datatypes.OscalUri] | None = Field(
         description="""
             The uniform resource locator (URL) for a web site or Internet presence associated with 
             the location.
         """,
         default=None,
     )
-    props: list[properties.LocationProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -377,7 +359,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
@@ -389,19 +371,23 @@ class Location(base.OscalModel):
         return self
 
 
+class DataCenterLocation(Location):
+    pass
+
+
 class ExternalID(base.OscalModel):
     """An identifier for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)
 
     Attributes:
-        scheme (datatypes.Uri): Indicates the type of external identifier.
+        scheme (datatypes_annotated.OscalUri): Indicates the type of external identifier.
         id (datattypes.String): the ID of the party"""
 
-    scheme: datatypes.Uri = Field(
+    scheme: datatypes.OscalUri = Field(
         description="""
             Indicates the type of external identifier.
         """,
     )
-    id: datatypes.String | None = Field(
+    id: datatypes.OscalString | None = Field(
         description="""
             An identifier for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)
         """,
@@ -416,7 +402,7 @@ class Party(base.OscalModel):
         param name (param type): describe the param
     """
 
-    uuid: datatypes.UUID | None = Field(
+    uuid: datatypes.OscalUUID | None = Field(
         description="""
             A machine-oriented, globally unique identifier with cross-instance scope that can be 
             used to reference this defined party elsewhere in this or other OSCAL instances. The 
@@ -427,7 +413,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    type: datatypes.String | None = Field(
+    type: typing.Literal["person", "organization"] | None = Field(
         description="""
             A category describing the kind of party the object describes.
 
@@ -441,13 +427,13 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    name: datatypes.String | None = Field(
+    name: datatypes.OscalString | None = Field(
         description="""
             The full name of the party. This is typically the legal name associated with the party.
         """,
         default=None,
     )
-    short_name: datatypes.String | None = Field(
+    short_name: datatypes.OscalString | None = Field(
         description="""
             A short common name, abbreviation, or acronym for the party.
         """,
@@ -460,7 +446,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.PartyProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             Additional properties related to the party
         """,
@@ -472,7 +458,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    email_addresses: list[datatypes.Email] | None = Field(
+    email_addresses: list[datatypes.OscalEmail] | None = Field(
         description="""
             A list of email addresses
         """,
@@ -490,53 +476,40 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    location_uuids: list[datatypes.UUID] | None = Field(
+    location_uuids: list[datatypes.OscalUUID] | None = Field(
         description="""
             A list of identifier references to a location defined in the metadata section of this or another OSCAL document.
         """,
         default=None,
     )
-    member_of_organizations: list[datatypes.UUID] | None = Field(
+    member_of_organizations: list[datatypes.OscalUUID] | None = Field(
         description="""
             A list of machine-oriented references to partise that this subject is associated with.
         """,
         default=None,
     )
-    remarks: list[datatypes.MarkupMultiline] | None = Field(
+    remarks: list[datatypes.OscalMarkupMultiline] | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
         default=None,
     )
 
-    @model_validator(mode="after")
-    def validate_party(self) -> Party:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "type": [
-                    datatypes.String(root="person"),
-                    datatypes.String(root="organization"),
-                ]
-            }
-        ]
-
-        return self.base_validator(calling_type=Party, allowed_values=allowed_values)
-
 
 class ResponsibleParty(base.OscalModel):
-    role_id: datatypes.Token = Field(
+    role_id: datatypes.OscalToken = Field(
         description="""
             A human-oriented identifier reference to roles served by the user
         """,
     )
-    party_uuids: list[datatypes.UUID] = Field(
+    party_uuids: list[datatypes.OscalUUID] = Field(
         description="""
             A machine-oriented identifier reference to another party defined in metadata. 
             The UUID of the party in the source OSCAL instance is sufficient to reference the data 
             item locally or globally (e.g., in an imported OSCAL instance).
         """,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -550,7 +523,7 @@ class ResponsibleParty(base.OscalModel):
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
@@ -559,31 +532,29 @@ class ResponsibleParty(base.OscalModel):
 
 
 class Metadata(base.OscalModel):
-    title: datatypes.MarkupLine = Field(
+    title: datatypes.OscalMarkupLine = Field(
         description="""
             A name given to the document, which may be used by a tool for display and navigation.
         """,
     )
-    published: datatypes.DateTimeWithTimezone | None = Field(
+    published: datatypes.OscalDateTimeWithTimezone | None = Field(
         description="""
             The date and time the document was published.
         """,
         default=None,
     )
-    last_modified: datatypes.DateTimeWithTimezone = Field(
+    last_modified: datatypes.OscalDateTimeWithTimezone = Field(
         description="""
             Last Modified Timestamp. If no value is provided, the current time will be inserted.
         """,
-        default=datatypes.DateTimeWithTimezone(
-            root=datetime.now(tz=timezone.utc).isoformat()
-        ),
+        default=datetime.now(tz=timezone.utc).isoformat(),
     )
-    version: datatypes.String = Field(
+    version: datatypes.OscalString = Field(
         description="""
             The OSCAL model version the document was authored against. Defaults to 1.0.6
         """,
     )
-    oscal_version: datatypes.String = Field(
+    oscal_version: datatypes.OscalString = Field(
         description="""
             The OSCAL model version the document was authored against. Defaults to 1.0.6
         """,
@@ -606,7 +577,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar 
@@ -645,7 +616,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,
@@ -672,12 +643,12 @@ class Metadata(base.OscalModel):
 
 
 class Citation(base.OscalModel):
-    text: datatypes.MarkupLine = Field(
+    text: datatypes.OscalMarkupLine = Field(
         description="""
             A line of citation text.
         """,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An optional list of attributes, characteristics, or qualities of the containing object 
             expressed as a namespace qualified name/value pair. The value of a property is a simple 
@@ -694,7 +665,7 @@ class Citation(base.OscalModel):
 
 
 class Hash(base.OscalModel):
-    algorithm: datatypes.String | None = Field(
+    algorithm: datatypes.OscalString | None = Field(
         description="""
             Method by which a hash is derived
 
@@ -718,7 +689,7 @@ class Hash(base.OscalModel):
         """,
         default=None,
     )
-    value: datatypes.String | None = Field(
+    value: datatypes.OscalString | None = Field(
         description="""
             The value of the hash
         """,
@@ -727,12 +698,12 @@ class Hash(base.OscalModel):
 
 
 class ResourceLink(base.OscalModel):
-    href: datatypes.UriReference = Field(
+    href: datatypes.OscalUriReference = Field(
         description="""
             A resolvable URI reference to a resource.
         """,
     )
-    media_type: datatypes.String | None = Field(
+    media_type: datatypes.OscalString | None = Field(
         description="""
             Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) 
             Media Types Registry.
@@ -748,21 +719,21 @@ class ResourceLink(base.OscalModel):
 
 
 class Base64(base.OscalModel):
-    filename: datatypes.UriReference | None = Field(
+    filename: datatypes.OscalUriReference | None = Field(
         description="""
             Name of the file before it was encoded as Base64 to be embedded in a resource. This is 
             the name that will be assigned to the file when the file is decoded.
         """,
         default=None,
     )
-    media_type: datatypes.String | None = Field(
+    media_type: datatypes.OscalString | None = Field(
         description="""
             Specifies a media type as defined by the Internet Assigned Numbers Authority (IANA) 
             Media Types Registry.
         """,
         default=None,
     )
-    value: datatypes.Base64Binary | None = Field(
+    value: datatypes.OscalBase64Binary | None = Field(
         description="""
             The Base64 encoded file.
         """,
@@ -772,7 +743,7 @@ class Base64(base.OscalModel):
 
 
 class Resource(base.OscalModel):
-    uuid: datatypes.UUID = Field(
+    uuid: datatypes.OscalUUID = Field(
         description="""
             A machine-oriented, globally unique identifier with cross-instance scope that can be 
             used to reference this defined resource elsewhere in this or other OSCAL instances. 
@@ -780,19 +751,19 @@ class Resource(base.OscalModel):
             to identify the same subject across revisions of the document.
         """,
     )
-    title: datatypes.MarkupLine | None = Field(
+    title: datatypes.OscalMarkupLine | None = Field(
         description="""
             A name given to the resource, which may be used by a tool for display and navigation.
         """,
         default=None,
     )
-    description: datatypes.MarkupMultiline | None = Field(
+    description: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             A short summary of the resource used to indicate the purpose of the resource.
         """,
         default=None,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An optional list of properties associated with the resource.
         """,
@@ -823,7 +794,7 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
-    remarks: datatypes.MarkupMultiline | None = Field(
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
         """,

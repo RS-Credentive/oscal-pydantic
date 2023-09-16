@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    PrivateAttr,
-)
+from pydantic import BaseModel, ConfigDict, PrivateAttr, model_validator, ValidationInfo
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any, Self
 
 
 from . import datatypes
@@ -70,6 +66,7 @@ class OscalModel(BaseModel):
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
+        print("super().__init__ complete")
         self._validation_results = []
         self._allowed_values = []
 
@@ -99,7 +96,14 @@ class OscalModel(BaseModel):
             warnings=warnings,
         )
 
-    def base_validator(self, calling_type: type, allowed_values: list[AllowedValue]):
+    @model_validator(mode="after")
+    def validate_with_context(self, info: ValidationInfo) -> Self:
+        context = info.context
+        if context and context["allowed_values"]:
+            self.base_validator(allowed_values=context["allowed_values"])
+        return self
+
+    def base_validator(self, allowed_values: list[AllowedValue]):
         # self.validate_fields(allowed_values=allowed_values)
         av_status: list[AllowedValueStatus] = []
         model_dict = self.model_dump()
@@ -112,7 +116,7 @@ class OscalModel(BaseModel):
                 if field in allowed_value_dict:
                     # Does the allowed value match the field contents?
                     if model_dict[field] in [
-                        value.root for value in allowed_value_dict[field]
+                        value for value in allowed_value_dict[field]
                     ]:
                         av_field_status.append(
                             FieldStatus(field=field, status="match", error=None)
@@ -150,15 +154,9 @@ class OscalModel(BaseModel):
         ]:
             return self
         else:
-            if type(self) == calling_type:
-                raise ValueError(
-                    self.print_validation_errors(
-                        validation_errors=self.validation_errors()
-                    )
-                )
-            else:
-                # This may be called from a subclass. If so, return control up
-                return self
+            raise ValueError(
+                self.print_validation_errors(validation_errors=self.validation_errors())
+            )
 
     def validation_errors(self) -> list[FieldError]:
         final_errors: list[FieldError] = []
@@ -181,7 +179,7 @@ class OscalModel(BaseModel):
         # Create strings for each error, separated by newlines
         return "\n".join(
             [
-                f"Expected value {error.expected_value.root} for field {error.field}"
+                f"Expected value {error.expected_value} for field {error.field}"
                 for error in validation_errors
             ]
         )
