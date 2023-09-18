@@ -132,7 +132,7 @@ class WithdrawnControlProperty(BaseProperty):
         # raise a deprecationwarning if value is capitalized
         if value == datatypes.OscalToken("Withdrawn"):
             warnings.warn(
-                "'Warning' is a deprecated property value for Control. Use 'warning' instead",
+                "'Withdrawn' is a deprecated property value for Control. Use 'withdrawn' instead",
                 DeprecationWarning,
             )
         return value
