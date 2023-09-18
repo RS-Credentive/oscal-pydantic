@@ -2,7 +2,7 @@ from __future__ import annotations
 import warnings
 import typing
 
-from . import base, datatypes, datatypes_rootmodels
+from . import base, datatypes
 
 from pydantic import Field, field_validator
 
@@ -127,11 +127,12 @@ class WithdrawnControlProperty(BaseProperty):
     @field_validator("value", mode="after")
     @classmethod
     def capitalized_withdrawn_deprecated(
-        cls, value: datatypes_rootmodels.Token
-    ) -> datatypes_rootmodels.Token:
+        cls, value: datatypes.OscalToken
+    ) -> datatypes.OscalToken:
         # raise a deprecationwarning if value is capitalized
-        warnings.warn(
-            "'Warning' is a deprecated property value for Control. Use 'warning' instead",
-            DeprecationWarning,
-        )
+        if value == datatypes.OscalToken("Withdrawn"):
+            warnings.warn(
+                "'Warning' is a deprecated property value for Control. Use 'warning' instead",
+                DeprecationWarning,
+            )
         return value
