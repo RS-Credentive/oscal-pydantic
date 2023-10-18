@@ -688,6 +688,7 @@ class Hash(base.OscalModel):
             SHA3-512: The SHA3-512 algorithm as defined by NIST FIPS 202.
         """,
         default=None,
+        pattern="^SHA3?-(224|256|384|512)$",
     )
     value: datatypes.OscalString | None = Field(
         description="""
@@ -695,6 +696,42 @@ class Hash(base.OscalModel):
         """,
         default=None,
     )
+
+    def value_is_hex(self) -> bool:
+        # Quick trick to check if a string is only HEX - try to convert it to an int.
+        # If it doesn't work, there's a bad character in there.
+        try:
+            int(self.value, 16)
+            return True
+        except ValueError:
+            return False
+
+    @model_validator(mode="after")
+    def validate_hash_for_algorithm(self):
+        if self.algorithm is not None and self.value is None:
+            raise ValueError("Hash Algorithm specified without Value")
+        elif self.algorithm == "SHA-224" or self.algorithm == "SHA3-224":
+            if len(self.value) == 28 and self.value_is_hex():
+                return self
+            else:
+                raise ValueError("Hash value length or contents do not match algorithm")
+        elif self.algorithm == "SHA-256" or self.algorithm == "SHA3-256":
+            if len(self.value) == 32 and self.value_is_hex():
+                return self
+            else:
+                raise ValueError("Hash value length or contents do not match algorithm")
+        elif self.algorithm == "SHA-384" or self.algorithm == "SHA3-384":
+            if len(self.value) == 48 and self.value_is_hex():
+                return self
+            else:
+                raise ValueError("Hash value length or contents do not match algorithm")
+        elif self.algorithm == "SHA-512" or self.algorithm == "SHA3-512":
+            if len(self.value) == 64 and self.value_is_hex():
+                return self
+            else:
+                raise ValueError("Hash value length or contents do not match algorithm")
+        else:
+            return self
 
 
 class ResourceLink(base.OscalModel):
