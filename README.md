@@ -1,5 +1,7 @@
 # OSCAL Pydantic
 
+## CHECK OUT PYDANTIC V2, UNDER DEVELOPMENT [IN THIS BRANCH](https://github.com/RS-Credentive/oscal-pydantic/tree/oscal-pydantic-v2)
+
 ## Description
 A simple module that contains pydantic datamodels representing the OSCAL standard. They are built from the OSCAL models published by NIST at https://github.com/usnistgov/OSCAL
 
