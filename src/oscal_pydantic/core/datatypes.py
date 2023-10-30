@@ -64,7 +64,10 @@ OscalNonNegativeInteger = NonNegativeInt
 
 OscalPositiveInteger = PositiveInt
 
-OscalBase64Binary = Annotated[str, constr(pattern=r"^[0-9A-Fa-f]+$")]
+OscalBase64Binary = Annotated[
+    str,
+    constr(pattern=r"^[0-9A-Fa-f]+$"),
+]
 
 OscalDate = Annotated[
     str,
@@ -119,7 +122,10 @@ OscalIpV6Address = Annotated[
     ),
 ]
 
-OscalString = Annotated[str, constr(pattern=r"\s.\S+")]
+OscalString = Annotated[
+    str,
+    constr(pattern=r"\s.\S+"),
+]
 
 OscalToken = Annotated[
     str,
