@@ -4,7 +4,7 @@ import typing
 
 from . import base, datatypes
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 
 class BaseProperty(base.OscalModel):
@@ -51,88 +51,6 @@ class BaseProperty(base.OscalModel):
         default=None,
     )
 
-
-class OscalProperty(BaseProperty):
-    name: typing.Literal["marking"]
-
-
-class LocationProperty(BaseProperty):
-    name: typing.Literal["type"]
-    value: typing.Literal["data-center"]
-    property_class: typing.Literal["primary", "alternate"]
-
-
-class PartyProperty(BaseProperty):
-    name: typing.Literal["mail-stop", "office", "job-title"]
-
-
-class ResourceProperty(BaseProperty):
-    name: typing.Literal["version"]
-    value: typing.Literal[
-        "logo",
-        "image",
-        "screen-shot",
-        "law",
-        "regulation",
-        "standard",
-        "external-guidance",
-        "acronyms",
-        "citation",
-        "policy",
-        "procedure",
-        "system-guide",
-        "users-guide",
-        "administrators-guide",
-        "rules-of-behavior",
-        "plan",
-        "artifact",
-        "evidence",
-        "tool-output",
-        "raw-data" "interview-notes",
-        "questionnaire",
-        "report",
-        "agreement",
-    ]
-
-
-class RmfProperty(BaseProperty):
-    ns: datatypes.OscalUri = datatypes.OscalUri("http://csrc.nist.gov/ns/rmf")
-
-
-class OscalParameterProperty(BaseProperty):
-    name: typing.Literal[
-        "label",
-        "sort-id",
-        "alt-identifier",
-        "alt-label",
-    ]
-
-
-class RmfParameterProperty(RmfProperty):
-    name: typing.Literal["aggregates"]
-
-
-class ControlPartProperty(BaseProperty):
-    name: typing.Literal[
-        "label",
-        "sort-id",
-        "alt-identifier",
-    ]
-
-
-class WithdrawnControlProperty(BaseProperty):
-    name: typing.Literal["status"]
-    value: typing.Literal["withdrawn", "Withdrawn"]
-
-    @field_validator("value", mode="after")
-    @classmethod
-    def capitalized_withdrawn_deprecated(
-        cls, value: datatypes.OscalToken
-    ) -> datatypes.OscalToken:
-        # raise a deprecationwarning if value is capitalized
-        if value == datatypes.OscalToken("Withdrawn"):
-            warnings.warn(
-                "'Withdrawn' is a deprecated property value for Control. Use 'withdrawn' instead",
-                DeprecationWarning,
-            )
-        return value
+    @model_validator(mode="after")
+    def check_allowed_values(self) -> BaseProperty:
+        return self
