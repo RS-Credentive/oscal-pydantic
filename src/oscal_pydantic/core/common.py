@@ -53,12 +53,14 @@ class Link(base.OscalModel):
 
 
 class RevisionLink(Link):
-    rel: typing.Literal[
-        "canonical",
-        "alternate",
-        "predecessor-version",
-        "successor-version",
-    ]
+    # TODO: Literals don't work this way
+    pass
+    # rel: typing.Literal[
+    #     "canonical",
+    #     "alternate",
+    #     "predecessor-version",
+    #     "successor-version",
+    # ]
 
 
 class Revision(base.OscalModel):
@@ -700,37 +702,60 @@ class Hash(base.OscalModel):
     def value_is_hex(self) -> bool:
         # Quick trick to check if a string is only HEX - try to convert it to an int.
         # If it doesn't work, there's a bad character in there.
-        try:
-            int(self.value, 16)
-            return True
-        except ValueError:
+        if self.value is not None:
+            try:
+                int(self.value, 16)
+                return True
+            except ValueError:
+                return False
+        else:
             return False
 
     @model_validator(mode="after")
-    def validate_hash_for_algorithm(self):
-        if self.algorithm is not None and self.value is None:
-            raise ValueError("Hash Algorithm specified without Value")
-        elif self.algorithm == "SHA-224" or self.algorithm == "SHA3-224":
-            if len(self.value) == 28 and self.value_is_hex():
-                return self
+    def validate_hash_for_algorithm(self) -> Hash:
+        if self.algorithm is None and self.value is None:
+            # No value and no algorithm is okay
+            return self
+        elif self.algorithm is not None and self.value is None:
+            # Any algorithm must have some value
+            raise ValueError("Hash Algorithm specified without a Hash Value")
+        elif self.algorithm is None and self.value is not None:
+            # Any algorithm must have some value
+            raise ValueError("Hash Value specified without a Hash Algorithm")
+        elif self.algorithm is not None and self.value is not None:
+            if self.algorithm == "SHA-224" or self.algorithm == "SHA3-224":
+                if len(self.value) == 28 and self.value_is_hex():
+                    return self
+                else:
+                    raise ValueError(
+                        "Hash value length or contents do not match algorithm"
+                    )
+            elif self.algorithm == "SHA-256" or self.algorithm == "SHA3-256":
+                if len(self.value) == 32 and self.value_is_hex():
+                    return self
+                else:
+                    raise ValueError(
+                        "Hash value length or contents do not match algorithm"
+                    )
+            elif self.algorithm == "SHA-384" or self.algorithm == "SHA3-384":
+                if len(self.value) == 48 and self.value_is_hex():
+                    return self
+                else:
+                    raise ValueError(
+                        "Hash value length or contents do not match algorithm"
+                    )
+            elif self.algorithm == "SHA-512" or self.algorithm == "SHA3-512":
+                if len(self.value) == 64 and self.value_is_hex():
+                    return self
+                else:
+                    raise ValueError(
+                        "Hash value length or contents do not match algorithm"
+                    )
             else:
-                raise ValueError("Hash value length or contents do not match algorithm")
-        elif self.algorithm == "SHA-256" or self.algorithm == "SHA3-256":
-            if len(self.value) == 32 and self.value_is_hex():
+                # Unrecognized Hash Algorithm and value - we have to assume they're okay
                 return self
-            else:
-                raise ValueError("Hash value length or contents do not match algorithm")
-        elif self.algorithm == "SHA-384" or self.algorithm == "SHA3-384":
-            if len(self.value) == 48 and self.value_is_hex():
-                return self
-            else:
-                raise ValueError("Hash value length or contents do not match algorithm")
-        elif self.algorithm == "SHA-512" or self.algorithm == "SHA3-512":
-            if len(self.value) == 64 and self.value_is_hex():
-                return self
-            else:
-                raise ValueError("Hash value length or contents do not match algorithm")
         else:
+            # Not sure if there's any way get here, but pylance is complaining about a missing return value
             return self
 
 
