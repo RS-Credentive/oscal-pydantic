@@ -1,34 +1,59 @@
-import random
-import string
-import unittest
-from pydantic import ValidationError
+import pytest
+
+from typing import Any
+
+from pydantic import TypeAdapter
 
 from oscal_pydantic.core import datatypes
 
 
-class TestDatatypes(unittest.TestCase):
-    def test_boolean(self):
+class TestDatatypes:
+    def test_oscal_boolean_true(self, get_truthy_data: list[Any]):
         # Check the truthy values
-        true_data = [1, "1", True]
-        for item in true_data:
-            bool_test = datatypes.OscalBool(item)
-            self.assertTrue(bool_test)
+        for item in get_truthy_data:
+            assert TypeAdapter(datatypes.OscalBool).validate_python(item)
 
+    def test_oscal_boolean_false(self, get_falsey_data: list[Any]):
         # Check the falsy values
-        false_data = [0, "0", False]
-        for item in false_data:
-            bool_test = datatypes.OscalBool(item)
-            self.assertFalse(bool_test)
+        for item in get_falsey_data:
+            assert not TypeAdapter(datatypes.OscalBool).validate_python(item)
 
-        # junk_data = [
-        #     "".join(random.sample(string.ascii_letters + string.digits, 1)),
-        #     random.randint(2, 9),
-        # ]
+    def test_oscal_boolean_junk(self, get_junk_bool_list: list[Any]):
+        for item in get_junk_bool_list:
+            with pytest.raises(ValueError):
+                TypeAdapter(datatypes.OscalBool).validate_python(item)
 
-        # Check the junk values
-        # for item in junk_data:
-        #     self.assertRaises(ValidationError, datatypes.OscalBool(item))
+    def test_oscal_decimal_good(self, get_test_float_list: list[float]):
+        for float_value in get_test_float_list:
+            assert isinstance(
+                TypeAdapter(datatypes.OscalDecimal).validate_python(float_value), float
+            )
 
+    # TODO: define function to test creating decimal from junk data
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_oscal_int_good(self, get_test_int_list: list[int]):
+        for int_value in get_test_int_list:
+            assert isinstance(
+                TypeAdapter(datatypes.OscalInteger).validate_python(int_value), int
+            )
+
+    def test_oscal_non_negative_int_good(self, get_non_negative_int: int):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalNonNegativeInteger).validate_python(
+                get_non_negative_int
+            ),
+            int,
+        )
+
+    def test_oscal_zero_is_non_negative_int(self):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalNonNegativeInteger).validate_python(0), int
+        )
+
+    def test_oscal_positive_int_good(self, get_positive_int: int):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalNonNegativeInteger).validate_python(
+                get_positive_int
+            ),
+            int,
+        )
