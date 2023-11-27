@@ -1,10 +1,8 @@
 from __future__ import annotations
-import warnings
-import typing
 
 from . import base, datatypes
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationInfo, model_validator
 
 
 class BaseProperty(base.OscalModel):
@@ -52,5 +50,49 @@ class BaseProperty(base.OscalModel):
     )
 
     @model_validator(mode="after")
-    def check_allowed_values(self) -> BaseProperty:
+    def check_allowed_values(self, info: ValidationInfo) -> BaseProperty:
+        context = info.context
+        if context:
+            pass
         return self
+
+
+class OscalProperty(BaseProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+
+class OscalMarking(OscalProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [datatypes.OscalToken("marking")],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+
+class LocationProperty(OscalProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [datatypes.OscalToken("type")],
+                "value": [datatypes.OscalString("data-center")],
+                "class": [
+                    datatypes.OscalToken("primary"),
+                    datatypes.OscalToken("alternate"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values

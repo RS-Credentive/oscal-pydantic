@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, PrivateAttr, model_validator, ValidationInfo
+from pydantic import BaseModel, ConfigDict, model_validator, ValidationInfo
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any, Self
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, ClassVar
 
 
 from . import datatypes
 
 AllowedValue: TypeAlias = dict[str, list[datatypes.OscalDatatype]]
+
 
 if TYPE_CHECKING:
     from pydantic.main import IncEx
@@ -51,11 +52,8 @@ class OscalModel(BaseModel):
         * Validate assignments by default
         * Use a common alias generator to convert "XXX_class" to "class" and change underscores to hyphens
         * When exporting json, exclude any attributes set to "None"
-        * Custom __init__ that supports definition of contextvars for constraints
+        * Includes a generic function to validate restrictions
     """
-
-    _validation_results: list[AllowedValueStatus] = PrivateAttr()
-    _allowed_values: list[AllowedValue] = PrivateAttr()
 
     model_config = ConfigDict(
         extra="forbid",
@@ -63,12 +61,6 @@ class OscalModel(BaseModel):
         validate_assignment=True,
         alias_generator=oscal_aliases,
     )
-
-    def __init__(self, **data: Any) -> None:
-        super().__init__(**data)
-        print("super().__init__ complete")
-        self._validation_results = []
-        self._allowed_values = []
 
     # Override default model_dump_json to include indentation, exclude null values and always use alias
     def model_dump_json(
@@ -96,90 +88,129 @@ class OscalModel(BaseModel):
             warnings=warnings,
         )
 
+    @classmethod
+    def get_allowed_values(cls) -> list[AllowedValue]:
+        allowed_values: list[AllowedValue] = []
+        return allowed_values
+
     @model_validator(mode="after")
-    def validate_with_context(self, info: ValidationInfo) -> Self:
-        context = info.context
-        if context and context["allowed_values"]:
-            self.base_validator(allowed_values=context["allowed_values"])
-        return self
+    def validate_with_classvars(self) -> OscalModel:
+        return self.verify_allowed_values(self.__class__.get_allowed_values())
 
-    def base_validator(self, allowed_values: list[AllowedValue]):
-        # self.validate_fields(allowed_values=allowed_values)
-        av_status: list[AllowedValueStatus] = []
-        model_dict = self.model_dump()
-        for allowed_value_dict in self._allowed_values:
-            # Set an initial AllowedValueStatus
-            av_status_result: pass_fail = "pass"
-            av_field_status: list[FieldStatus] = []
-            for field in model_dict:
-                # Does allowed_values specify a value for this field?
-                if field in allowed_value_dict:
-                    # Does the allowed value match the field contents?
-                    if model_dict[field] in [
-                        value for value in allowed_value_dict[field]
-                    ]:
-                        av_field_status.append(
-                            FieldStatus(field=field, status="match", error=None)
-                        )
-                    # If not, record it as an error
-                    else:
-                        for expected_value in [
-                            value for value in allowed_value_dict[field]
-                        ]:
-                            error = FieldError(
-                                field=field, expected_value=expected_value
-                            )
-                            av_field_status.append(
-                                FieldStatus(field=field, status="error", error=error)
-                            )
-                        # If any field fails, the entire AllowedValueStatus result is "fail"
-                        av_status_result = "fail"
-                # IF the field is not present in the allowed values dict, the field is unchecked
-                else:
-                    av_field_status.append(
-                        FieldStatus(field=field, status="unchecked", error=None)
-                    )
-
-            av_status.append(
-                AllowedValueStatus(
-                    result=av_status_result, fields_status=av_field_status
-                )
-            )
-
-        # Finally, add the list of AllowedValueStatus results created to our private Attribute
-        self._validation_results.extend(av_status)
-
-        if len(self._validation_results) == 0 or "pass" in [
-            result.result for result in self._validation_results
-        ]:
+    @model_validator(mode="after")
+    def validate_with_context(self, info: ValidationInfo) -> OscalModel:
+        # If no context object is set, or it's not a list of AllowedValues,
+        # there are no restrictions to check. Return immediately
+        if not info.context or type(info.context) != list[AllowedValue]:
             return self
+
+        # Otherwise check
         else:
+            # Initialize the allowed_values dict containing fields and allowed values
+            allowed_values: list[AllowedValue] = info.context
+
+            # dump the current object to a dict
+            this_object = self.model_dump()
+
+            # Get all the fields that are set on the model and are included
+            # in the restricted attribute list
+            fields_in_this_object = this_object.keys()
+            restricted_fields = self.flatten_allowed_value_keys_lists(
+                allowed_values=allowed_values
+            )
+            restricted_fields_in_this_object = [
+                field for field in fields_in_this_object if field in restricted_fields
+            ]
+
+            # If none of the fields in this object are subject to a restriction, the object
+            # is valid. Return immediately
+            if len(restricted_fields_in_this_object) == 0:
+                return self
+
+            # Otherwise, iterate through the allowed values list
+            for allowed_value in allowed_values:
+                # See if the allowed value doesn't include any of the restricted fields in this object
+                # If it doesn't, move to the next allowed value
+                if restricted_fields_in_this_object not in allowed_value.keys():
+                    break
+                else:
+                    # Set a temp variable - does this particular object comply with the restrictions
+                    # in this particular allowed value
+                    this_object_complies_with_this_allowed_value: bool = True
+
+                    # Check the object field against every restricted field in the allowed_value
+                    for field in allowed_value.keys():
+                        # If the value in the field is not an allowed value, we have failed the whole check
+                        if this_object[field] not in allowed_value[field]:
+                            this_object_complies_with_this_allowed_value = False
+                            # TODO: Can we just break out of the enclosing 'if' here? Would speed things up.
+
+                    # If we've checked every field and haven't found a problem, then the object passes the
+                    # restriction and we can stop looking - return self to exit succesfully
+                    if this_object_complies_with_this_allowed_value:
+                        return self
+
+            # If we get here, we checked all of the allowed values and none of them passed, so we throw a
+            # ValueError with the information about the allowed value restrictions
             raise ValueError(
-                self.print_validation_errors(validation_errors=self.validation_errors())
+                "Object did not meets Allowed value restrictions. "
+                + str(allowed_values)
             )
 
-    def validation_errors(self) -> list[FieldError]:
-        final_errors: list[FieldError] = []
-        # If we passed any of the validations, the whole thing is okay
-        successes = [
-            status for status in self._validation_results if status.result == "pass"
-        ]
-        if len(successes) > 0:
-            return final_errors
+    def verify_allowed_values(self, allowed_values: list[AllowedValue]) -> OscalModel:
+        # dump the current object to a dict
+        this_object = self.model_dump()
 
-        # Otherwise, return a list of errors
-        for result in self._validation_results:
-            for status in result.fields_status:
-                if status.error is not None:
-                    final_errors.append(status.error)
-
-        return final_errors
-
-    def print_validation_errors(self, validation_errors: list[FieldError]) -> str:
-        # Create strings for each error, separated by newlines
-        return "\n".join(
-            [
-                f"Expected value {error.expected_value} for field {error.field}"
-                for error in validation_errors
-            ]
+        # Get all the fields that are set on the model and are included
+        # in the restricted attribute list
+        fields_in_this_object = this_object.keys()
+        restricted_fields = self.flatten_allowed_value_keys_lists(
+            allowed_values=allowed_values
         )
+        restricted_fields_in_this_object = [
+            field for field in fields_in_this_object if field in restricted_fields
+        ]
+
+        # If none of the fields in this object are subject to a restriction, the object
+        # is valid. Return immediately
+        if len(restricted_fields_in_this_object) == 0:
+            return self
+
+        # Otherwise, iterate through the allowed values list
+        for allowed_value in allowed_values:
+            # See if the allowed value doesn't include any of the restricted fields in this object
+            # If it doesn't, move to the next allowed value
+            if restricted_fields_in_this_object not in allowed_value.keys():
+                break
+            else:
+                # Set a temp variable - does this particular object comply with the restrictions
+                # in this particular allowed value
+                this_object_complies_with_this_allowed_value: bool = True
+
+                # Check the object field against every restricted field in the allowed_value
+                for field in allowed_value.keys():
+                    # If the value in the field is not an allowed value, we have failed the whole check
+                    if this_object[field] not in allowed_value[field]:
+                        this_object_complies_with_this_allowed_value = False
+                        # TODO: Can we just break out of the enclosing 'if' here? Would speed things up.
+
+                # If we've checked every field and haven't found a problem, then the object passes the
+                # restriction and we can stop looking - return self to exit succesfully
+                if this_object_complies_with_this_allowed_value:
+                    return self
+
+        # If we get here, we checked all of the allowed values and none of them passed, so we throw a
+        # ValueError with the information about the allowed value restrictions
+        raise ValueError(
+            "Object did not meets Allowed value restrictions. " + str(allowed_values)
+        )
+
+    def flatten_allowed_value_keys_lists(
+        self,
+        allowed_values: list[AllowedValue],
+    ) -> list[str]:
+        key_list: list[str] = []
+        for allowed_value in allowed_values:
+            key_list += allowed_value.keys()
+
+        return key_list

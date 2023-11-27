@@ -6,17 +6,15 @@ from typing import Any, Union, Annotated
 from pydantic import (
     NonNegativeInt,
     PositiveInt,
-    ValidationError,
     EmailStr,
     AnyUrl,
     BeforeValidator,
     AfterValidator,
-    ValidationInfo,
     constr,
 )
 
 
-def validate_bool(v: Any, info: ValidationInfo) -> Any:
+def validate_bool(v: Any) -> bool:
     """
     validate_bool additional validation for OSCAL flavor of bool. We only accept "true" or "1" or 1 as True,
     "false" or "0" or 0 as false. This function enforces that restriction.
@@ -26,15 +24,10 @@ def validate_bool(v: Any, info: ValidationInfo) -> Any:
         it may be a bool or int if constructed from XML, and will be a str if parsed from json.
         info (ValidationInfo): validationInfo provided by pydantic
 
-    Raises:
-        ValidationError: _description_
-
     Returns:
-        bool: _description_
+        Any: True or False if the validation maps to an accepted value - otherwise we return the value which
+        may or may not be valid
     """
-    validation_error = (
-        'We only accept "true" or "1" or 1 as True, "false" or "0" or 0 as false.'
-    )
 
     if isinstance(v, str):
         if v == "true" or v == "1":
@@ -42,16 +35,18 @@ def validate_bool(v: Any, info: ValidationInfo) -> Any:
         elif v == "false" or v == "0":
             return False
         else:
-            raise ValidationError(validation_error)
+            raise ValueError
     elif isinstance(v, int):
         if v == 1:
             return True
         elif v == 0:
             return False
         else:
-            raise ValidationError(validation_error)
+            raise ValueError
+    elif isinstance(v, bool):
+        return v
     else:
-        raise ValidationError(validation_error)
+        raise ValueError
 
 
 OscalBool = Annotated[bool, BeforeValidator(validate_bool)]

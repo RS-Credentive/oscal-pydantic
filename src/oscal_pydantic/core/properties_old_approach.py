@@ -1,6 +1,8 @@
 from __future__ import annotations
 import warnings
-from typing import ClassVar
+from typing import ClassVar, Any
+
+from oscal_pydantic.core.base import AllowedValue
 
 from . import base, datatypes
 
@@ -55,15 +57,20 @@ class BaseProperty(base.OscalModel):
 
 
 class OscalProperty(BaseProperty):
-    allowed_values: ClassVar[AllowedValueList] = [
-        {
-            "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
-            "name": [datatypes.OscalToken("marking")],
-        },
-    ]
+    @classmethod
+    def get_allowed_values(cls) -> list[AllowedValue]:
+        allowed_values: AllowedValueList = [
+            {
+                "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
+                "name": [datatypes.OscalToken("marking")],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class LocationProperty(OscalProperty):
+    cls.test: ClassVar[int] = 1
     allowed_values: ClassVar[AllowedValueList] = [
         {
             "name": [datatypes.OscalToken("type")],
