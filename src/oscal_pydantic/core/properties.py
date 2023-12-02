@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from . import base, datatypes
 
-from pydantic import Field, ValidationInfo, model_validator
+from pydantic import Field
 
 
 class BaseProperty(base.OscalModel):
@@ -49,15 +49,8 @@ class BaseProperty(base.OscalModel):
         default=None,
     )
 
-    @model_validator(mode="after")
-    def check_allowed_values(self, info: ValidationInfo) -> BaseProperty:
-        context = info.context
-        if context:
-            pass
-        return self
 
-
-class OscalProperty(BaseProperty):
+class OscalBaseProperty(BaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -69,7 +62,7 @@ class OscalProperty(BaseProperty):
         return allowed_values
 
 
-class OscalMarking(OscalProperty):
+class OscalMarkingProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -81,14 +74,14 @@ class OscalMarking(OscalProperty):
         return allowed_values
 
 
-class LocationProperty(OscalProperty):
+class LocationProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [datatypes.OscalToken("type")],
                 "value": [datatypes.OscalString("data-center")],
-                "class": [
+                "prop_class": [
                     datatypes.OscalToken("primary"),
                     datatypes.OscalToken("alternate"),
                 ],

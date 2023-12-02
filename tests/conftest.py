@@ -2,7 +2,13 @@ import pytest
 import random
 import string
 import sys
-from typing import Any, Optional
+import os
+import base64
+import datetime
+import uuid
+from typing import Any
+
+from oscal_pydantic.core import datatypes, common, properties
 
 
 def filter_by_type(item: Any, filtered_type: type) -> Any:
@@ -117,3 +123,53 @@ def get_non_negative_int(get_test_int: int) -> int:
 @pytest.fixture
 def get_positive_int(get_test_int: int) -> int:
     return random.randint(1, sys.maxsize)
+
+
+@pytest.fixture
+def get_random_base64_string(get_test_string: str) -> bytes:
+    return base64.b64encode(os.urandom(random.randint(1, 4096)))
+
+
+@pytest.fixture
+def get_random_date_string() -> str:
+    return datetime.date.today().isoformat()
+
+
+@pytest.fixture
+def get_random_datetime_string() -> str:
+    return datetime.datetime.now().isoformat()
+
+
+@pytest.fixture
+def get_uuid() -> datatypes.OscalUUID:
+    return uuid.uuid4()
+
+
+@pytest.fixture
+def get_markupline() -> datatypes.OscalMarkupLine:
+    return "Fix this later"
+
+
+# Need a generic function that accepts a model and generates a known good based on the model's definition.
+
+
+@pytest.fixture
+def get_address() -> common.Address:
+    test_address = common.Address(
+        type="test",
+        addr_lines=["123 Main Street"],
+        city="Test City",
+        state="Test State",
+        postal_code="12345",
+        country="TS",
+    )
+    return test_address
+
+
+@pytest.fixture
+def get_location_property() -> properties.LocationProperty:
+    return properties.LocationProperty(
+        name="type",
+        value="data-center",
+        prop_class="primary",
+    )

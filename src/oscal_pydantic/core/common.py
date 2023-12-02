@@ -250,6 +250,7 @@ class Address(base.OscalModel):
         default=None,
     )
 
+    # TODO: This should be a field validator
     @model_validator(mode="after")
     def two_letter_country_code(self) -> Address:
         if self.country is not None and re.match("[A-Z]{2}", self.country) == None:
@@ -347,7 +348,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[properties.LocationProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -367,14 +368,6 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-
-    @model_validator(mode="after")
-    def validate_type(self) -> Location:
-        return self
-
-
-class DataCenterLocation(Location):
-    pass
 
 
 class ExternalID(base.OscalModel):

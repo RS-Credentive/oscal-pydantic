@@ -57,3 +57,25 @@ class TestDatatypes:
             ),
             int,
         )
+
+    def test_oscal_base64_binary_good(self, get_random_base64_string: bytes):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalBase64Binary).validate_python(
+                str(get_random_base64_string)
+            ),
+            str,
+        )
+
+    def test_oscal_date_good(self, get_random_date_string: str):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalDate).validate_python(get_random_date_string),
+            str,
+        )
+
+    def test_oscal_datetime_good(self, get_random_datetime_string: str):
+        assert isinstance(
+            TypeAdapter(datatypes.OscalDateTime).validate_python(
+                get_random_datetime_string
+            ),
+            str,
+        )

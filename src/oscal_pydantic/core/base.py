@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, model_validator, ValidationInfo
+from pydantic import BaseModel, ConfigDict, model_validator
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, ClassVar
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias
 
 
 from . import datatypes
@@ -97,66 +97,6 @@ class OscalModel(BaseModel):
     def validate_with_classvars(self) -> OscalModel:
         return self.verify_allowed_values(self.__class__.get_allowed_values())
 
-    @model_validator(mode="after")
-    def validate_with_context(self, info: ValidationInfo) -> OscalModel:
-        # If no context object is set, or it's not a list of AllowedValues,
-        # there are no restrictions to check. Return immediately
-        if not info.context or type(info.context) != list[AllowedValue]:
-            return self
-
-        # Otherwise check
-        else:
-            # Initialize the allowed_values dict containing fields and allowed values
-            allowed_values: list[AllowedValue] = info.context
-
-            # dump the current object to a dict
-            this_object = self.model_dump()
-
-            # Get all the fields that are set on the model and are included
-            # in the restricted attribute list
-            fields_in_this_object = this_object.keys()
-            restricted_fields = self.flatten_allowed_value_keys_lists(
-                allowed_values=allowed_values
-            )
-            restricted_fields_in_this_object = [
-                field for field in fields_in_this_object if field in restricted_fields
-            ]
-
-            # If none of the fields in this object are subject to a restriction, the object
-            # is valid. Return immediately
-            if len(restricted_fields_in_this_object) == 0:
-                return self
-
-            # Otherwise, iterate through the allowed values list
-            for allowed_value in allowed_values:
-                # See if the allowed value doesn't include any of the restricted fields in this object
-                # If it doesn't, move to the next allowed value
-                if restricted_fields_in_this_object not in allowed_value.keys():
-                    break
-                else:
-                    # Set a temp variable - does this particular object comply with the restrictions
-                    # in this particular allowed value
-                    this_object_complies_with_this_allowed_value: bool = True
-
-                    # Check the object field against every restricted field in the allowed_value
-                    for field in allowed_value.keys():
-                        # If the value in the field is not an allowed value, we have failed the whole check
-                        if this_object[field] not in allowed_value[field]:
-                            this_object_complies_with_this_allowed_value = False
-                            # TODO: Can we just break out of the enclosing 'if' here? Would speed things up.
-
-                    # If we've checked every field and haven't found a problem, then the object passes the
-                    # restriction and we can stop looking - return self to exit succesfully
-                    if this_object_complies_with_this_allowed_value:
-                        return self
-
-            # If we get here, we checked all of the allowed values and none of them passed, so we throw a
-            # ValueError with the information about the allowed value restrictions
-            raise ValueError(
-                "Object did not meets Allowed value restrictions. "
-                + str(allowed_values)
-            )
-
     def verify_allowed_values(self, allowed_values: list[AllowedValue]) -> OscalModel:
         # dump the current object to a dict
         this_object = self.model_dump()
@@ -176,34 +116,33 @@ class OscalModel(BaseModel):
         if len(restricted_fields_in_this_object) == 0:
             return self
 
+        invalid_fields: list[str] = []
         # Otherwise, iterate through the allowed values list
         for allowed_value in allowed_values:
-            # See if the allowed value doesn't include any of the restricted fields in this object
-            # If it doesn't, move to the next allowed value
-            if restricted_fields_in_this_object not in allowed_value.keys():
+            # Get the list of values to check, e.g. fields in the object that are restricted fields
+            values_to_check = list(
+                set(restricted_fields_in_this_object).intersection(allowed_value.keys())
+            )
+            # If the allowed value doesn't include any of the restricted fields in this object
+            # move to the next allowed value
+            if len(values_to_check) == 0:
                 break
             else:
-                # Set a temp variable - does this particular object comply with the restrictions
-                # in this particular allowed value
-                this_object_complies_with_this_allowed_value: bool = True
-
                 # Check the object field against every restricted field in the allowed_value
-                for field in allowed_value.keys():
+                for field in allowed_value:
                     # If the value in the field is not an allowed value, we have failed the whole check
                     if this_object[field] not in allowed_value[field]:
-                        this_object_complies_with_this_allowed_value = False
-                        # TODO: Can we just break out of the enclosing 'if' here? Would speed things up.
+                        invalid_fields.append(
+                            f"{field} value was {this_object[field]}.\n Should be one of {allowed_value[field]}"
+                        )
 
-                # If we've checked every field and haven't found a problem, then the object passes the
-                # restriction and we can stop looking - return self to exit succesfully
-                if this_object_complies_with_this_allowed_value:
-                    return self
-
-        # If we get here, we checked all of the allowed values and none of them passed, so we throw a
-        # ValueError with the information about the allowed value restrictions
-        raise ValueError(
-            "Object did not meets Allowed value restrictions. " + str(allowed_values)
-        )
+        if len(invalid_fields) > 0:
+            error_string = "Incorrect value(s) specified in Object:\n"
+            for invalid_field in invalid_fields:
+                error_string += f"{invalid_field}\n"
+            raise ValueError(error_string)
+        else:
+            return self
 
     def flatten_allowed_value_keys_lists(
         self,

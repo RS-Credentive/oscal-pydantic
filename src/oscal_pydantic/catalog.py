@@ -79,7 +79,7 @@ class Select(base.OscalModel):
 
 ParameterProperty = Annotated[
     Union[
-        properties.OscalProperty,
+        properties.OscalBaseProperty,
         properties.OscalParameterProperty,
         properties.RmfParameterProperty,
     ],
@@ -209,7 +209,7 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.OscalBaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -299,7 +299,7 @@ class Control(base.OscalModel):
         default=None,
     )
     props: list[
-        properties.OscalProperty | properties.ControlPartProperty
+        properties.OscalBaseProperty | properties.ControlPartProperty
     ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
@@ -354,7 +354,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalProperty] | None = Field(
+    props: list[properties.OscalBaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
