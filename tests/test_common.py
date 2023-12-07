@@ -1,4 +1,5 @@
-from oscal_pydantic.core import properties, datatypes, common
+from oscal_pydantic.core import datatypes, common
+from oscal_pydantic.properties import oscal_properties
 
 
 class TestCommon:
@@ -14,10 +15,10 @@ class TestCommon:
                 title=get_markupline,
                 address=get_address,
                 props=[
-                    properties.LocationProperty(
-                        name="type",
-                        value="data-center",
-                        prop_class="primary",
+                    oscal_properties.LocationProperty(
+                        name=datatypes.OscalToken("type"),
+                        value=datatypes.OscalString("data-center"),
+                        prop_class=datatypes.OscalToken("primary"),
                     )
                 ],
             ),

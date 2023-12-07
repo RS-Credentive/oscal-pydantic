@@ -8,7 +8,8 @@ import datetime
 import uuid
 from typing import Any
 
-from oscal_pydantic.core import datatypes, common, properties
+from oscal_pydantic.core import datatypes, common
+from oscal_pydantic.properties import base_property
 
 
 def filter_by_type(item: Any, filtered_type: type) -> Any:
@@ -164,12 +165,3 @@ def get_address() -> common.Address:
         country="TS",
     )
     return test_address
-
-
-@pytest.fixture
-def get_location_property() -> properties.LocationProperty:
-    return properties.LocationProperty(
-        name="type",
-        value="data-center",
-        prop_class="primary",
-    )
