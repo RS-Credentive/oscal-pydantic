@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from . import base, datatypes
+from ..core import base, datatypes
 
 from pydantic import Field
 
@@ -48,44 +48,3 @@ class BaseProperty(base.OscalModel):
             """,
         default=None,
     )
-
-
-class OscalBaseProperty(BaseProperty):
-    @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
-            },
-        ]
-        allowed_values.extend(super().get_allowed_values())
-        return allowed_values
-
-
-class OscalMarkingProperty(OscalBaseProperty):
-    @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "name": [datatypes.OscalToken("marking")],
-            },
-        ]
-        allowed_values.extend(super().get_allowed_values())
-        return allowed_values
-
-
-class LocationProperty(OscalBaseProperty):
-    @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "name": [datatypes.OscalToken("type")],
-                "value": [datatypes.OscalString("data-center")],
-                "prop_class": [
-                    datatypes.OscalToken("primary"),
-                    datatypes.OscalToken("alternate"),
-                ],
-            },
-        ]
-        allowed_values.extend(super().get_allowed_values())
-        return allowed_values
