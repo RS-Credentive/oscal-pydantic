@@ -11,7 +11,9 @@ import re
 
 import typing
 
-from . import base, datatypes, properties
+from ..properties import rmf_properties, oscal_properties, base_property
+
+from . import base, datatypes
 
 from pydantic import (
     Field,
@@ -53,14 +55,21 @@ class Link(base.OscalModel):
 
 
 class RevisionLink(Link):
-    # TODO: Literals don't work this way
-    pass
-    # rel: typing.Literal[
-    #     "canonical",
-    #     "alternate",
-    #     "predecessor-version",
-    #     "successor-version",
-    # ]
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "rel": [
+                    datatypes.OscalToken("canonical"),
+                    datatypes.OscalToken("alternate"),
+                    datatypes.OscalToken("predecessor-version"),
+                    datatypes.OscalToken("successor-version"),
+                    datatypes.OscalToken("version-history"),
+                ],
+            }
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class Revision(base.OscalModel):
@@ -106,7 +115,9 @@ class Revision(base.OscalModel):
             The OSCAL model version the document was authored against.
         """,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[
+        base_property.BaseProperty | oscal_properties.OscalMarkingProperty
+    ] | None = Field(
         description="""
             Properties permit the deployment and management of arbitrary controlled values, 
             within OSCAL objects. A property can be included for any purpose useful to an 
@@ -190,7 +201,7 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[base_property.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair. The value of a property is a simple scalar value, which may be 
@@ -348,7 +359,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.LocationProperty] | None = Field(
+    props: list[oscal_properties.LocationProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -441,7 +452,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[oscal_properties.PartyProperty] | None = Field(
         description="""
             Additional properties related to the party
         """,
@@ -504,7 +515,7 @@ class ResponsibleParty(base.OscalModel):
             item locally or globally (e.g., in an imported OSCAL instance).
         """,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[base_property.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -524,6 +535,73 @@ class ResponsibleParty(base.OscalModel):
         """,
         default=None,
     )
+
+
+class Action(base.OscalModel):
+    uuid: datatypes.OscalUUID = Field(
+        description="""
+            A unique identifier that can be used to reference this defined action elsewhere in an OSCAL document. 
+            A UUID should be consistently used for a given location across revisions of the document.
+        """
+    )
+    date: datatypes.OscalDateTimeWithTimezone | None = Field(
+        description="""
+            The date and time when the action occurred.
+        """,
+        default=None,
+    )
+    type: datatypes.OscalToken = Field(
+        description="""
+            The type of action documented by the assembly, such as an approval.
+        """,
+    )
+    system: datatypes.OscalUri = Field(
+        description="""
+            Specifies the action type system used.
+        """
+    )
+    props: list[base_property.BaseProperty] = Field(
+        description="""
+            An attribute, characteristic, or quality of the containing object expressed as a 
+            namespace qualified name/value pair. The value of a property is a simple scalar value,
+            which may be expressed as a list of values.
+        """,
+        default=None,
+    )
+    links: list[Link] | None = Field(
+        description="""
+            A reference to a local or remote resource, that has a specific relation to the containing object.
+        """,
+        default=None,
+    )
+    responsible_parties: list[ResponsibleParty] | None = Field(
+        description="""
+            A reference to a set of persons and/or organizations that have responsibility for performing the 
+            referenced role in the context of the containing object.
+        """,
+        default=None,
+    )
+    remarks: datatypes.OscalMarkupMultiline | None = Field(
+        description="""
+            Additional commentary about the containing object.
+        """
+    )
+
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "system": [
+                    datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
+                ],
+                "type": [
+                    datatypes.OscalToken("approval"),
+                    datatypes.OscalToken("request-changes"),
+                ],
+            }
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class Metadata(base.OscalModel):
@@ -572,7 +650,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[base_property.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar 
@@ -611,6 +689,11 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
+    actions: list[Action] | None = Field(
+        description="""
+            An action applied by a role within a given party to the content.
+        """
+    )
     remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
             Additional commentary on the containing object.
@@ -643,7 +726,7 @@ class Citation(base.OscalModel):
             A line of citation text.
         """,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[base_property.BaseProperty] | None = Field(
         description="""
             An optional list of attributes, characteristics, or qualities of the containing object 
             expressed as a namespace qualified name/value pair. The value of a property is a simple 
@@ -818,7 +901,7 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.BaseProperty] | None = Field(
+    props: list[base_property.BaseProperty] | None = Field(
         description="""
             An optional list of properties associated with the resource.
         """,
