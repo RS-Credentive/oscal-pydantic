@@ -105,7 +105,7 @@ class OscalModel(BaseModel):
         # in the restricted attribute list
         fields_in_this_object = this_object.keys()
         restricted_fields = self.flatten_allowed_value_keys_lists(
-            allowed_values=allowed_values
+            allowed_values_list=allowed_values
         )
         restricted_fields_in_this_object = [
             field for field in fields_in_this_object if field in restricted_fields
@@ -146,10 +146,10 @@ class OscalModel(BaseModel):
 
     def flatten_allowed_value_keys_lists(
         self,
-        allowed_values: list[AllowedValue],
+        allowed_values_list: list[AllowedValue],
     ) -> list[str]:
         key_list: list[str] = []
-        for allowed_value in allowed_values:
+        for allowed_value in allowed_values_list:
             key_list += allowed_value.keys()
 
         return key_list
