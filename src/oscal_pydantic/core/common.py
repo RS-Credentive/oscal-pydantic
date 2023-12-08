@@ -11,9 +11,7 @@ import re
 
 import typing
 
-from ..properties import rmf_properties, oscal_properties, base_property
-
-from . import base, datatypes
+from . import base, datatypes, properties
 
 from pydantic import (
     Field,
@@ -115,9 +113,7 @@ class Revision(base.OscalModel):
             The OSCAL model version the document was authored against.
         """,
     )
-    props: list[
-        base_property.BaseProperty | oscal_properties.OscalMarkingProperty
-    ] | None = Field(
+    props: list[properties.OscalMarkingProperty] | None = Field(
         description="""
             Properties permit the deployment and management of arbitrary controlled values, 
             within OSCAL objects. A property can be included for any purpose useful to an 
@@ -201,7 +197,7 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
-    props: list[base_property.BaseProperty] | None = Field(
+    props: list[properties.OscalMarkingProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair. The value of a property is a simple scalar value, which may be 
@@ -359,7 +355,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    props: list[oscal_properties.LocationProperty] | None = Field(
+    props: list[properties.OscalLocationProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -452,7 +448,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    props: list[oscal_properties.PartyProperty] | None = Field(
+    props: list[properties.OscalPartyProperty] | None = Field(
         description="""
             Additional properties related to the party
         """,
@@ -515,7 +511,7 @@ class ResponsibleParty(base.OscalModel):
             item locally or globally (e.g., in an imported OSCAL instance).
         """,
     )
-    props: list[base_property.BaseProperty] | None = Field(
+    props: list[properties.OscalMarkingProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -560,7 +556,7 @@ class Action(base.OscalModel):
             Specifies the action type system used.
         """
     )
-    props: list[base_property.BaseProperty] = Field(
+    props: list[properties.OscalMarkingProperty] = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -650,7 +646,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    props: list[base_property.BaseProperty] | None = Field(
+    props: list[properties.OscalMetadataProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar 
@@ -726,7 +722,7 @@ class Citation(base.OscalModel):
             A line of citation text.
         """,
     )
-    props: list[base_property.BaseProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An optional list of attributes, characteristics, or qualities of the containing object 
             expressed as a namespace qualified name/value pair. The value of a property is a simple 
@@ -901,7 +897,7 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
-    props: list[base_property.BaseProperty] | None = Field(
+    props: list[properties.OscalResourceProperty] | None = Field(
         description="""
             An optional list of properties associated with the resource.
         """,

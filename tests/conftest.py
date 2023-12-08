@@ -9,7 +9,6 @@ import uuid
 from typing import Any
 
 from oscal_pydantic.core import datatypes, common
-from oscal_pydantic.properties import base_property
 
 
 def filter_by_type(item: Any, filtered_type: type) -> Any:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from ..core import base, datatypes
+from .. import base, datatypes
 
 from .base_property import BaseProperty
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 import warnings
 
@@ -26,14 +26,16 @@ class OscalMarkingProperty(OscalBaseProperty):
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
-                "name": [datatypes.OscalToken("marking")],
+                "name": [
+                    datatypes.OscalToken("marking"),
+                ],
             },
         ]
         allowed_values.extend(super().get_allowed_values())
         return allowed_values
 
 
-class LocationProperty(OscalBaseProperty):
+class OscalLocationProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -50,7 +52,7 @@ class LocationProperty(OscalBaseProperty):
         return allowed_values
 
 
-class PartyProperty(OscalBaseProperty):
+class OscalPartyProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -66,23 +68,7 @@ class PartyProperty(OscalBaseProperty):
         return allowed_values
 
 
-class ActionProperty(OscalBaseProperty):
-    @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
-        allowed_values: list[base.AllowedValue] = [
-            {
-                "name": [
-                    datatypes.OscalToken("mail-stop"),
-                    datatypes.OscalToken("office"),
-                    datatypes.OscalToken("job-title"),
-                ],
-            }
-        ]
-        allowed_values.extend(super().get_allowed_values())
-        return allowed_values
-
-
-class ResourceProperty(OscalBaseProperty):
+class OscalResourceProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -122,9 +108,28 @@ class ResourceProperty(OscalBaseProperty):
                     datatypes.OscalString("agreement"),
                 ],
             },
+            {
+                "name": [
+                    datatypes.OscalString("published"),
+                ]
+            },
         ]
         allowed_values.extend(super().get_allowed_values())
         return allowed_values
+
+    @model_validator(mode="after")
+    def validate_publication_date(self) -> OscalResourceProperty:
+        # for prop[has-oscal-namespace('http://csrc.nist.gov/ns/oscal') and
+        # @name='published']/@value:
+        # the target value must match the lexical form of the 'dateTime-with-timezone' data type.
+        if self.name == "published":
+            try:
+                datatypes.OscalDateTimeWithTimezone(self.value)
+            except ValueError:
+                raise ValueError(
+                    "Value of property in resource with name 'published' must match 'OscalDateTimeWithTimezone' format"
+                )
+        return self
 
 
 class OscalParameterProperty(OscalBaseProperty):
@@ -144,7 +149,7 @@ class OscalParameterProperty(OscalBaseProperty):
         return allowed_values
 
 
-class PartProperty(OscalBaseProperty):
+class OscalPartProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -160,7 +165,7 @@ class PartProperty(OscalBaseProperty):
         return allowed_values
 
 
-class ControlProperty(OscalBaseProperty):
+class OscalControlProperty(OscalBaseProperty):
     @classmethod
     def get_allowed_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
@@ -193,3 +198,17 @@ class ControlProperty(OscalBaseProperty):
             DeprecationWarning,
         )
         return value
+
+
+class OscalMetadataProperty(OscalBaseProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("keywords"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values

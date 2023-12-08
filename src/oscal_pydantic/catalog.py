@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from .properties import base_property
-
-from .core import base, common, datatypes
+from .core import base, common, datatypes, properties
 
 from pydantic import Field, field_validator, AnyUrl
 
-from typing import Annotated, Union, Literal
+from typing import Literal
 
 import warnings
 
@@ -79,16 +77,6 @@ class Select(base.OscalModel):
             return how_many
 
 
-ParameterProperty = Annotated[
-    Union[
-        base_property.OscalBaseProperty,
-        base_property.OscalParameterProperty,
-        base_property.RmfParameterProperty,
-    ],
-    Field(discriminator="name"),
-]
-
-
 class Parameter(base.OscalModel):
     id: datatypes.OscalToken = Field(
         description="A unique identifier for the parameter"
@@ -107,7 +95,9 @@ class Parameter(base.OscalModel):
         """,
         default=None,
     )
-    props: list[ParameterProperty] | None = Field(
+    props: list[
+        properties.OscalParameterProperty | properties.RmfParameterProperty
+    ] | None = Field(
         description="""
             Parameters provide a mechanism for the dynamic assignment of value(s) in a control.
         """,
@@ -211,7 +201,7 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[base_property.OscalBaseProperty] | None = Field(
+    props: list[properties.OscalBaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -301,7 +291,7 @@ class Control(base.OscalModel):
         default=None,
     )
     props: list[
-        base_property.OscalBaseProperty | base_property.ControlPartProperty
+        properties.OscalBaseProperty | properties.ControlPartProperty
     ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
@@ -356,7 +346,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[base_property.OscalBaseProperty] | None = Field(
+    props: list[properties.OscalBaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.

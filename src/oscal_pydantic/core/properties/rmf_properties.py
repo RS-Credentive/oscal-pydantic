@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..core import base, datatypes
+from .. import base, datatypes
 
 from .base_property import BaseProperty
 
