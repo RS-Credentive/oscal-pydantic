@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, DefaultDict
 
 
 from . import datatypes
@@ -99,11 +99,11 @@ class OscalModel(BaseModel):
 
     def verify_allowed_values(self, allowed_values: list[AllowedValue]) -> OscalModel:
         # dump the current object to a dict
-        this_object = self.model_dump()
+        this_object_dict = self.model_dump()
 
         # Get all the fields that are set on the model and are included
         # in the restricted attribute list
-        fields_in_this_object = this_object.keys()
+        fields_in_this_object = this_object_dict.keys()
         restricted_fields = self.flatten_allowed_value_keys_lists(
             allowed_values_list=allowed_values
         )
@@ -116,36 +116,66 @@ class OscalModel(BaseModel):
         if len(restricted_fields_in_this_object) == 0:
             return self
 
-        invalid_fields: list[str] = []
-        # Otherwise, iterate through the allowed values list
-        for allowed_value in allowed_values:
-            # Get the list of values to check, e.g. fields in the object that are restricted fields
-            values_to_check = list(
-                set(restricted_fields_in_this_object).intersection(allowed_value.keys())
-            )
-            # If the allowed value doesn't include any of the restricted fields in this object
-            # move to the next allowed value
-            if len(values_to_check) == 0:
-                break
-            else:
-                # Check the object field against every restricted field in the allowed_value
-                for field in allowed_value:
-                    # If the value in the field is not an allowed value, we have failed the whole check
-                    if this_object[field] not in allowed_value[field]:
-                        invalid_fields.append(
-                            f"{field} value was {this_object[field]}.\n Should be one of {allowed_value[field]}"
+        # Otherwise, we have to check the fields
+
+        # Start by getting the restricted_field_set_dict
+        restricted_field_set_dict = self.get_restricted_field_set_dict(
+            allowed_values_list=allowed_values
+        )
+
+        # iterate through all of entries
+        for restricted_field_set in restricted_field_set_dict.keys():
+            # Find all of the allowed_values that are included in this restricted_file_set frozendict
+            allowed_values_to_check = [
+                a_v
+                for a_v in allowed_values
+                if restricted_field_set.issuperset(a_v.keys())
+            ]
+
+            # iterate through the allowed_values
+            for allowed_value_dict in allowed_values_to_check:
+                # iterate through the keys in the dict
+                for field in allowed_value_dict.keys():
+                    # if the field exists in this object and the value matches, set the corresponding restricted_field_set_dict to True
+                    if (
+                        field in this_object_dict.keys()
+                        and this_object_dict[field] in allowed_value_dict[field]
+                    ):
+                        restricted_field_set_dict[restricted_field_set] = True
+
+        # We have evaluated all of the allowed_values against the object. Now we confirm that every value test passed.
+        if not False in restricted_field_set_dict.values():
+            # if we passed all the tests, return the object
+            return self
+        else:
+            # Create a list of of error strings to return with the error
+            value_error_listing: list[str] = []
+
+            # Get the set of fields for every failed test
+            incorrect_value_sets = [
+                r_field
+                for r_field in restricted_field_set_dict.keys()
+                if restricted_field_set_dict[r_field] == False
+            ]
+
+            # Loop through them to construct the value_error_listing string
+            for incorrect_value_set in incorrect_value_sets:
+                related_allowed_values = [
+                    a_v
+                    for a_v in allowed_values
+                    if incorrect_value_set.issuperset(a_v.keys())
+                ]
+                for related_allowed_value in related_allowed_values:
+                    for key, value in related_allowed_value.items():
+                        value_error_listing.append(
+                            f"{key} may have one of the values {value}"
                         )
 
-        if len(invalid_fields) > 0:
-            error_string = "Incorrect value(s) specified in Object:\n"
-            for invalid_field in invalid_fields:
-                error_string += f"{invalid_field}\n"
-            raise ValueError(error_string)
-        else:
-            return self
+            raise ValueError("Incorrect value(s)" + "\n".join(value_error_listing))
 
+    @classmethod
     def flatten_allowed_value_keys_lists(
-        self,
+        cls,
         allowed_values_list: list[AllowedValue],
     ) -> list[str]:
         key_list: list[str] = []
@@ -153,3 +183,40 @@ class OscalModel(BaseModel):
             key_list += allowed_value.keys()
 
         return key_list
+
+    @classmethod
+    def get_restricted_field_set_dict(
+        cls, allowed_values_list: list[AllowedValue]
+    ) -> dict[frozenset[str], bool]:
+        # Start by identifying the set of fields with restrictions in the "Allowed Value" list.
+        # We use a 'set' to avoid duplicates, and we use 'frozenset' because a frozenset can be a dictionary key.
+        restricted_fields: set[frozenset[str]] = set()
+        for allowed_value in allowed_values_list:
+            if len(restricted_fields) == 0:
+                # if the restricted fields set is empty, no point in doing anything else
+                # add this item and move on
+                restricted_fields.add(frozenset(allowed_value))
+            else:
+                allowed_value_fs = frozenset(allowed_value.keys())
+                for restricted_field in restricted_fields:
+                    if allowed_value_fs.issubset(restricted_field):
+                        # Don't add this to the list - it or a superset of it exists in the list already
+                        # Note that a set is always a subset of itself, so this checks for equality as well
+                        break
+                    elif restricted_field.issubset(allowed_value_fs):
+                        # If allowed_value_fs is a superset of restricted_field,
+                        # replace restricted_fiedl with allowed_value_fs
+                        restricted_fields.remove(restricted_field)
+                        restricted_fields.add(allowed_value_fs)
+                        break
+                    else:
+                        # this allowed_value is not related to any of the other fields,
+                        # add ist to the restricted_fields set
+                        restricted_fields.add(allowed_value_fs)
+                        break
+
+        # Now we have a set of attributes that need to be compared as groups.
+        # Build a dictionary with the keys of the attribute sets, and a value of bool
+        # if the bool is True, the values passed in have been successfully validated,
+        # Otherwise they have not.
+        return dict.fromkeys(restricted_fields, False)
