@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator, ValidationError
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, DefaultDict
+from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any, TypeVar
 
 
 from . import datatypes
 
 AllowedValue: TypeAlias = dict[str, list[datatypes.OscalDatatype]]
 
+FieldType = TypeVar("FieldType", bound="OscalModel")
+
+AllowedFieldTypes: TypeAlias = dict[str, list[Any]]
+
 
 if TYPE_CHECKING:
     from pydantic.main import IncEx
-
-    pass_fail: TypeAlias = Literal["pass", "fail"]
 
 
 # To help with error reporting, we create a NamedTuple of the field, and the invalid value
@@ -26,11 +28,6 @@ class FieldStatus(NamedTuple):
     field: str
     status: Literal["match", "unchecked", "error"]
     error: FieldError | None
-
-
-class AllowedValueStatus(NamedTuple):
-    result: pass_fail
-    fields_status: list[FieldStatus]
 
 
 # Helper function to convert python_variable_name to json-attribute-name
@@ -93,9 +90,69 @@ class OscalModel(BaseModel):
         allowed_values: list[AllowedValue] = []
         return allowed_values
 
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = []
+        return allowed_subfield_types
+
+    @model_validator(mode="after")
+    def validate_subfield_types(self) -> OscalModel:
+        if len(self.__class__.get_allowed_subfield_types()) > 0:
+            return self.verify_subfields(self.__class__.get_allowed_subfield_types())
+        else:
+            return self
+
+    def verify_subfields(
+        self, allowed_subfields: list[AllowedFieldTypes]
+    ) -> OscalModel:
+        this_object_dict = self.model_dump()
+
+        # Flatten the list of dicts into a single dict
+        flattened_restricted_fields: AllowedFieldTypes = {}
+        validation_results: dict[str, bool] = {}
+        for allowed_subfield in allowed_subfields:
+            for field in allowed_subfield.keys():
+                if field in flattened_restricted_fields.keys():
+                    flattened_restricted_fields[field].extend(allowed_subfield[field])
+                else:
+                    flattened_restricted_fields[field] = allowed_subfield[field]
+                    validation_results[field] = False
+
+        # Walk through the fields and validate the values
+        for field in flattened_restricted_fields:
+            if field in this_object_dict.keys() and this_object_dict[field] is not None:
+                for subfield_type in flattened_restricted_fields[field]:
+                    try:
+                        # Try to validate the provided data against the model
+                        if type(this_object_dict[field]) == list:
+                            # If it's a list, compare each item to the spec
+                            for item in this_object_dict[field]:
+                                subfield_type.model_validate(item)
+                        else:
+                            subfield_type.model_validate(this_object_dict[field])
+                        # If it succeeds, than the field is valid
+                        validation_results[field] = True
+                    except ValidationError:
+                        # Ignore the error
+                        pass
+            else:
+                # The object doesn't have an instance of the field, so the restriction doesn't apply
+                validation_results[field] = True
+
+        # If we have not been able to validate the field against any of the models, raise an exception
+        if False in validation_results.values():
+            raise ValueError(
+                "A field of the model could not be validated against the specification"
+            )
+        else:
+            return self
+
     @model_validator(mode="after")
     def validate_with_classvars(self) -> OscalModel:
-        return self.verify_allowed_values(self.__class__.get_allowed_values())
+        if len(self.__class__.get_allowed_values()) > 0:
+            return self.verify_allowed_values(self.__class__.get_allowed_values())
+        else:
+            return self
 
     def verify_allowed_values(self, allowed_values: list[AllowedValue]) -> OscalModel:
         # dump the current object to a dict
