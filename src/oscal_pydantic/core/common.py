@@ -688,7 +688,8 @@ class Metadata(base.OscalModel):
     actions: list[Action] | None = Field(
         description="""
             An action applied by a role within a given party to the content.
-        """
+        """,
+        default=None,
     )
     remarks: datatypes.OscalMarkupMultiline | None = Field(
         description="""
