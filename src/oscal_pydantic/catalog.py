@@ -97,9 +97,7 @@ class Parameter(base.OscalModel):
         """,
         default=None,
     )
-    props: list[
-        properties.OscalParameterProperty | properties.RmfParameterProperty
-    ] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             Parameters provide a mechanism for the dynamic assignment of value(s) in a control.
         """,
@@ -165,6 +163,19 @@ class Parameter(base.OscalModel):
             "depends-on is a deprecated field for catalog", DeprecationWarning
         )
         return depends_on
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types = [
+            {
+                "props": [
+                    properties.OscalParameterProperty,
+                    properties.RmfParameterProperty,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class BasePart(base.OscalModel):

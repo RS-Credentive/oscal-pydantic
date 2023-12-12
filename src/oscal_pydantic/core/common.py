@@ -197,7 +197,7 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalMarkingProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair. The value of a property is a simple scalar value, which may be 
@@ -217,6 +217,12 @@ class Role(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class Address(base.OscalModel):
@@ -355,7 +361,7 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalLocationProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value, 
@@ -375,6 +381,12 @@ class Location(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalLocationProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class ExternalID(base.OscalModel):
@@ -448,7 +460,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalPartyProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             Additional properties related to the party
         """,
@@ -497,6 +509,12 @@ class Party(base.OscalModel):
         default=None,
     )
 
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalPartyProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
+
 
 class ResponsibleParty(base.OscalModel):
     role_id: datatypes.OscalToken = Field(
@@ -511,7 +529,7 @@ class ResponsibleParty(base.OscalModel):
             item locally or globally (e.g., in an imported OSCAL instance).
         """,
     )
-    props: list[properties.OscalMarkingProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -531,6 +549,12 @@ class ResponsibleParty(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class Action(base.OscalModel):
@@ -556,7 +580,7 @@ class Action(base.OscalModel):
             Specifies the action type system used.
         """
     )
-    props: list[properties.OscalMarkingProperty] = Field(
+    props: list[properties.BaseProperty] = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
@@ -598,6 +622,12 @@ class Action(base.OscalModel):
         ]
         allowed_values.extend(super().get_allowed_values())
         return allowed_values
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class Metadata(base.OscalModel):
@@ -646,7 +676,7 @@ class Metadata(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalMetadataProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar 
@@ -716,6 +746,12 @@ class Metadata(base.OscalModel):
                         raise ValueError(f"Party UUID {uuid} not present in parties")
         return self
 
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalMetadataProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
+
 
 class Citation(base.OscalModel):
     text: datatypes.OscalMarkupLine = Field(
@@ -737,6 +773,12 @@ class Citation(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class Hash(base.OscalModel):
@@ -898,7 +940,7 @@ class Resource(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalResourceProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An optional list of properties associated with the resource.
         """,
@@ -953,6 +995,19 @@ class Resource(base.OscalModel):
             if len(duplicates) > 0:
                 raise ValueError("Duplicate base64 items in %s", self.uuid)
         return self
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [
+            {
+                "props": [
+                    properties.OscalResourceProperty,
+                    properties.OscalMarkingProperty,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class BackMatter(base.OscalModel):
