@@ -212,3 +212,37 @@ class OscalMetadataProperty(OscalBaseProperty):
         ]
         allowed_values.extend(super().get_allowed_values())
         return allowed_values
+
+
+class OscalAssessmentMethodProperty(OscalBaseProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("method"),
+                ],
+                "value": [
+                    datatypes.OscalToken("INTERVIEW"),
+                    datatypes.OscalToken("EXAMINE"),
+                    datatypes.OscalToken("TEST"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+
+class OscalGroupProperty(OscalBaseProperty):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("overview"),
+                    datatypes.OscalToken("instruction"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
