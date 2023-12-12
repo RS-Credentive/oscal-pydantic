@@ -2,7 +2,6 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.analysis.typeCheckingMode": "strict",
     "python.testing.pytestArgs": [
         "."
     ],
