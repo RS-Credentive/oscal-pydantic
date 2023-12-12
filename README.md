@@ -7,7 +7,7 @@ Several Python projects include data models, but importing a large project just 
 
 ## Installation
 
-pip install oscal-pydantic
+Package coming!
 
 ## Usage
 
