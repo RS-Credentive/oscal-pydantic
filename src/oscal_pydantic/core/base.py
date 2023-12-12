@@ -120,24 +120,35 @@ class OscalModel(BaseModel):
 
         # Walk through the fields and validate the values
         for field in flattened_restricted_fields:
-            if field in this_object_dict.keys() and this_object_dict[field] is not None:
+            restricted_field = getattr(self, field)
+            if restricted_field is not None:
                 for subfield_type in flattened_restricted_fields[field]:
-                    try:
-                        # Try to validate the provided data against the model
-                        if type(this_object_dict[field]) == list:
-                            # If it's a list, compare each item to the spec
-                            for item in this_object_dict[field]:
-                                subfield_type.model_validate(item)
-                        else:
-                            subfield_type.model_validate(this_object_dict[field])
-                        # If it succeeds, than the field is valid
-                        validation_results[field] = True
-                    except ValidationError:
-                        # Ignore the error
-                        pass
-            else:
-                # The object doesn't have an instance of the field, so the restriction doesn't apply
-                validation_results[field] = True
+                    if type(restricted_field) == list:
+                        for item in restricted_field:
+                            subfield_type.parse_object(item)
+                    else:
+                        restricted_field = subfield_type.mode
+
+            # if field in this_object_dict.keys() and this_object_dict[field] is not None:
+            #     for subfield_type in flattened_restricted_fields[field]:
+            #         try:
+            #             # Try to validate the provided data against the model
+            #             if type(this_object_dict[field]) == list:
+            #                 # If it's a list, compare each item to the spec
+            #                 for item in this_object_dict[field]:
+            #                     item = subfield_type.model_validate(item)
+            #             else:
+            #                 this_object_dict[field] = subfield_type.model_validate(
+            #                     this_object_dict[field]
+            #                 )
+            #             # If it succeeds, than the field is valid
+            #             validation_results[field] = True
+            #         except ValidationError:
+            #             # Ignore the error
+            #             pass
+            # else:
+            #     # The object doesn't have an instance of the field, so the restriction doesn't apply
+            #     validation_results[field] = True
 
         # If we have not been able to validate the field against any of the models, raise an exception
         if False in validation_results.values():
