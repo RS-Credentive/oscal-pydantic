@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from oscal_pydantic.core.base import AllowedFieldTypes
+
 from .core import base, common, datatypes, properties
 
 from pydantic import Field, field_validator, AnyUrl
 
-from typing import Literal
 
 import warnings
 
@@ -55,7 +56,7 @@ class Select(base.OscalModel):
             Describes the number of selections that must occur. Without this setting, only 
             one value should be assumed to be permitted.
         """,
-        default=None,
+        default=datatypes.OscalToken("one"),
     )
     choice: list[datatypes.OscalMarkupLine] | None = Field(
         description="""
@@ -64,17 +65,18 @@ class Select(base.OscalModel):
         default=None,
     )
 
-    @field_validator("how_many")
     @classmethod
-    def one_or_many(cls, how_many: datatypes.OscalToken) -> datatypes.OscalToken:
-        permitted_values = [
-            datatypes.OscalToken("one"),
-            datatypes.OscalToken("one-or-many"),
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "how_many": [
+                    datatypes.OscalToken("one"),
+                    datatypes.OscalToken("one-or-more"),
+                ],
+            },
         ]
-        if how_many not in permitted_values:
-            raise ValueError("Select/how-many must be 'one' or 'one-or-many'")
-        else:
-            return how_many
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class Parameter(base.OscalModel):
@@ -140,7 +142,7 @@ class Parameter(base.OscalModel):
         """,
         default=None,
     )
-    select: list[Select] | None = Field(
+    select: Select | None = Field(
         description="""
             Presenting a choice among alternatives.
         """,
@@ -166,7 +168,7 @@ class Parameter(base.OscalModel):
 
 
 class BasePart(base.OscalModel):
-    # Parts come in a few flavors - this GenericPart defines the field, and the subclasses provide
+    # Parts come in a few flavors - this BasePart defines the fields, and the subclasses provide
     # appropriate validation
     # TODO: make this an abstract base class
     id: datatypes.OscalToken | None = Field(
@@ -201,7 +203,11 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalBaseProperty] | None = Field(
+    props: list[
+        properties.OscalPartProperty
+        | properties.OscalAssessmentMethodProperty
+        | properties.RmfAssessmentMethodProperty
+    ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -214,7 +220,7 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    parts: list[NestedPart] | None = Field(
+    parts: list[BasePart] | None = Field(
         description="""
             An annotated, markup-based textual element of a control's or catalog group's definition, or 
             a child of another part.
@@ -228,39 +234,173 @@ class BasePart(base.OscalModel):
         default=None,
     )
 
+
+class OscalPart(BasePart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [
+                    datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+
+class StatementPart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("statement"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types = [{"parts": [StatementItemPart]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
+
+
+class StatementItemPart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("item"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types = [{"parts": [StatementItemPart]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
+
+
+class GuidancePart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("guidance"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+
+class AssessmentObjectivePart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("assessment-objective"),
+                    datatypes.OscalToken("objective"),  # TODO: Deprecated
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
     @field_validator("name", mode="after")
     @classmethod
     def assessment_deprecated(cls, name: datatypes.OscalToken) -> datatypes.OscalToken:
         # raise a deprecationwarning if name is 'assessment'
-        warnings.warn(
-            "'assessment' is a deprecated property value for name. Use 'assessment-method' instead",
-            DeprecationWarning,
-        )
+        if name == datatypes.OscalToken("objective"):
+            warnings.warn(
+                "'objective' is a deprecated property value for name. Use 'assessment-objective' instead",
+                DeprecationWarning,
+            )
         return name
 
-
-class Part(BasePart):
-    name: Literal[
-        "overview",
-        "statement",
-        "guidance",
-        "assessment",
-        "assessment-method",
-    ]
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types = [{"parts": [AssessmentObjectivePart]}]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
-class NestedPart(BasePart):
-    name: Literal["item"]
+class AssesmentMethodPart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("assessment"),
+                    datatypes.OscalToken("assessment-method"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+    @field_validator("name", mode="after")
+    @classmethod
+    def assessment_deprecated(cls, name: datatypes.OscalToken) -> datatypes.OscalToken:
+        # raise a deprecationwarning if name is 'assessment'
+        if name == datatypes.OscalToken("assessment"):
+            warnings.warn(
+                "'assessment' is a deprecated property value for name. Use 'assessment-method' instead",
+                DeprecationWarning,
+            )
+        return name
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types = [
+            {"parts": [AssessmentObjectPart]},
+            {"props": [properties.OscalAssessmentMethodProperty]},
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
+
+
+class AssessmentObjectPart(OscalPart):
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    datatypes.OscalToken("assessment-objects"),
+                    datatypes.OscalToken("objects"),  # TODO: Deprecated
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class ControlLink(common.Link):
-    rel: Literal[
-        "reference",
-        "related",
-        "required",
-        "incorporated-into",
-        "moved-to",
-    ]
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "rel": [
+                    datatypes.OscalToken("reference"),
+                    datatypes.OscalToken("related"),
+                    datatypes.OscalToken("required"),
+                    datatypes.OscalToken("incorporated-into"),
+                    datatypes.OscalToken("moved-to"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class Control(base.OscalModel):
@@ -290,9 +430,7 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
-    props: list[
-        properties.OscalBaseProperty | properties.ControlPartProperty
-    ] | None = Field(
+    props: list[properties.OscalControlProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -306,11 +444,12 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
-    parts: list[Part] | None = Field(
+    parts: list[BasePart] | None = Field(
         description="""
             An annotated, markup-based textual element of a control's or catalog group's definition, 
             or a child of another part.
         """,
+        default=None,
     )
     controls: list[Control] | None = Field(
         description="""
@@ -346,7 +485,9 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalBaseProperty] | None = Field(
+    props: list[
+        properties.OscalControlProperty | properties.OscalGroupProperty
+    ] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -359,7 +500,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    parts: list[Part] | None = Field(
+    parts: list[BasePart] | None = Field(
         description="""
             An annotated, markup-based textual element of a control's or catalog group's definition, or a 
             child of another part.
