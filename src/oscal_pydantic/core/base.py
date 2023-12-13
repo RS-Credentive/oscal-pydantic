@@ -176,13 +176,16 @@ class OscalModel(BaseModel):
             )
         for type_to_check in types_to_check:
             if issubclass(type_to_check, OscalModel):
-                try:
-                    typed_object = type_to_check.model_validate(
-                        field_object.model_dump()
-                    )
-                    return typed_object
-                except Exception as e:
-                    pass
+                if type(field_object) == type_to_check:
+                    return field_object
+                else:
+                    try:
+                        typed_object = type_to_check.model_validate(
+                            field_object.model_dump()
+                        )
+                        return typed_object
+                    except Exception as e:
+                        pass
             else:
                 raise Exception(
                     "Invalid class passed to verification function. All types to check must be subclasses of OscalModel"
