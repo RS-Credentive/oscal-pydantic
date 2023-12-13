@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, model_validator, ValidationError
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any, TypeVar
 
@@ -55,7 +55,7 @@ class OscalModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
-        validate_assignment=True,
+        validate_assignment=False,
         alias_generator=oscal_aliases,
     )
 
@@ -105,58 +105,92 @@ class OscalModel(BaseModel):
     def verify_subfields(
         self, allowed_subfields: list[AllowedFieldTypes]
     ) -> OscalModel:
-        this_object_dict = self.model_dump()
-
-        # Flatten the list of dicts into a single dict
+        # Flatten the list of dicts into a single dict - merges separate lists
+        # of possible field types to a single list
         flattened_restricted_fields: AllowedFieldTypes = {}
-        validation_results: dict[str, bool] = {}
         for allowed_subfield in allowed_subfields:
             for field in allowed_subfield.keys():
                 if field in flattened_restricted_fields.keys():
                     flattened_restricted_fields[field].extend(allowed_subfield[field])
                 else:
                     flattened_restricted_fields[field] = allowed_subfield[field]
-                    validation_results[field] = False
 
         # Walk through the fields and validate the values
         for field in flattened_restricted_fields:
-            restricted_field = getattr(self, field)
-            if restricted_field is not None:
-                for subfield_type in flattened_restricted_fields[field]:
-                    if type(restricted_field) == list:
-                        for item in restricted_field:
-                            subfield_type.parse_object(item)
-                    else:
-                        restricted_field = subfield_type.mode
+            # Only check the field content if the field exists and is not None
+            if getattr(self, field, None) is not None:
+                field_object: Any | list[Any] = getattr(self, field)
 
-            # if field in this_object_dict.keys() and this_object_dict[field] is not None:
-            #     for subfield_type in flattened_restricted_fields[field]:
-            #         try:
-            #             # Try to validate the provided data against the model
-            #             if type(this_object_dict[field]) == list:
-            #                 # If it's a list, compare each item to the spec
-            #                 for item in this_object_dict[field]:
-            #                     item = subfield_type.model_validate(item)
-            #             else:
-            #                 this_object_dict[field] = subfield_type.model_validate(
-            #                     this_object_dict[field]
-            #                 )
-            #             # If it succeeds, than the field is valid
-            #             validation_results[field] = True
-            #         except ValidationError:
-            #             # Ignore the error
-            #             pass
-            # else:
-            #     # The object doesn't have an instance of the field, so the restriction doesn't apply
-            #     validation_results[field] = True
+                # Is the object already one of the correct types?
+                if type(field_object) in flattened_restricted_fields[field]:
+                    return self
 
-        # If we have not been able to validate the field against any of the models, raise an exception
-        if False in validation_results.values():
-            raise ValueError(
-                "A field of the model could not be validated against the specification"
+                # If the field_object is not a list, process it as is
+                if type(field_object) != list:
+                    try:
+                        # Check the field agains the profided type list. If a match is found,
+                        # update the field object to represent the specific type.
+                        setattr(
+                            self,
+                            field,
+                            self.check_field_type(
+                                field_object=field_object,
+                                types_to_check=flattened_restricted_fields[field],
+                            ),
+                        )
+
+                    except:
+                        # If a value error is raised, the field could not be validated against any of the provided models
+                        # That means that the field, and the entire object is invalid
+                        raise ValueError(
+                            f"Unable to validate {field} against types provided: {flattened_restricted_fields[field]}"
+                        )
+
+                # Otherwise, the field is a list. step through it and process all the elements
+                else:
+                    new_field_object = []
+                    for item in field_object:
+                        try:
+                            new_field_object.append(
+                                self.check_field_type(
+                                    field_object=item,
+                                    types_to_check=flattened_restricted_fields[field],
+                                )
+                            )
+                        except:
+                            raise ValueError(
+                                f"Unable to validate {field} against types provided: {flattened_restricted_fields[field]}"
+                            )
+
+                    # if we get through list without errors, replace the existing list with new,
+                    # precisely typed list.
+                    setattr(self, field, new_field_object)
+
+        # If we get through with no errors, return the updated object
+        return self
+
+    def check_field_type(self, field_object: Any, types_to_check: list[Any]) -> Any:
+        if not isinstance(field_object, OscalModel):
+            raise Exception(
+                "Invalid Class provided to verification class - must be instance of OscalModel of subclass"
             )
-        else:
-            return self
+        for type_to_check in types_to_check:
+            if issubclass(type_to_check, OscalModel):
+                try:
+                    typed_object = type_to_check.model_validate(
+                        field_object.model_dump()
+                    )
+                    return typed_object
+                except Exception as e:
+                    pass
+            else:
+                raise Exception(
+                    "Invalid class passed to verification function. All types to check must be subclasses of OscalModel"
+                )
+
+        raise Exception(
+            "Unable to instantiate the provided object as any of the provided Models"
+        )
 
     @model_validator(mode="after")
     def validate_with_classvars(self) -> OscalModel:
