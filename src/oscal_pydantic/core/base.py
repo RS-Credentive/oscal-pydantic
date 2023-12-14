@@ -55,7 +55,7 @@ class OscalModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
-        validate_assignment=False,
+        validate_assignment=False,  # TODO: Change this as soon as we have validation working
         alias_generator=oscal_aliases,
     )
 
@@ -148,19 +148,24 @@ class OscalModel(BaseModel):
 
                 # Otherwise, the field is a list. step through it and process all the elements
                 else:
-                    new_field_object = []
+                    new_field_object: list[Any] = []
                     for item in field_object:
-                        try:
-                            new_field_object.append(
-                                self.check_field_type(
-                                    field_object=item,
-                                    types_to_check=flattened_restricted_fields[field],
+                        if type(item) in flattened_restricted_fields[field]:
+                            pass
+                        else:
+                            try:
+                                new_field_object.append(
+                                    self.check_field_type(
+                                        field_object=item,
+                                        types_to_check=flattened_restricted_fields[
+                                            field
+                                        ],
+                                    )
                                 )
-                            )
-                        except:
-                            raise ValueError(
-                                f"Unable to validate {field} against types provided: {flattened_restricted_fields[field]}"
-                            )
+                            except:
+                                raise ValueError(
+                                    f"Unable to validate {field} against types provided: {flattened_restricted_fields[field]}"
+                                )
 
                     # if we get through list without errors, replace the existing list with new,
                     # precisely typed list.
@@ -176,16 +181,13 @@ class OscalModel(BaseModel):
             )
         for type_to_check in types_to_check:
             if issubclass(type_to_check, OscalModel):
-                if type(field_object) == type_to_check:
-                    return field_object
-                else:
-                    try:
-                        typed_object = type_to_check.model_validate(
-                            field_object.model_dump()
-                        )
-                        return typed_object
-                    except Exception as e:
-                        pass
+                try:
+                    typed_object = type_to_check.model_validate(
+                        field_object.model_dump()
+                    )
+                    return typed_object
+                except Exception as e:
+                    pass
             else:
                 raise Exception(
                     "Invalid class passed to verification function. All types to check must be subclasses of OscalModel"
