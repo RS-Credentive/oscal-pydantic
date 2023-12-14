@@ -1,0 +1,69 @@
+{
+    "title": "Electronic Version of NIST SP 800-53 Rev 5 Controls and SP 800-53A Rev 5 Assessment Procedures",
+    "last-modified": "2022-08-23T10:36:49.1330265-04:00",
+    "version": "5.1.2",
+    "oscal-version": "1.0.5",
+    "props": [
+        {
+            "name": "keywords",
+            "value": "Assessment, assessment plan, assurance, availability, computer security, confidentiality, control, control assessment, cybersecurity, FISMA, information security, information system, integrity, personally identifiable information, OSCAL, Open Security Controls Assessment Language, Privacy Act, privacy controls, privacy functions, privacy requirements, Risk Management Framework, security controls, security functions, security requirements, system, system security"
+        }
+    ],
+    "links": [
+        {
+            "href": "#c3397cc9-83c6-4459-adb2-836739dc1b94",
+            "rel": "alternate"
+        },
+        {
+            "href": "#f7cf488d-bc64-4a91-a994-810e153ee481",
+            "rel": "canonical"
+        }
+    ],
+    "roles": [
+        {
+            "id": "creator",
+            "title": "Document creator"
+        },
+        {
+            "id": "contact",
+            "title": "Contact"
+        }
+    ],
+    "parties": [
+        {
+            "uuid": "41a93829-b76b-43ec-b9e7-250553511549",
+            "type": "organization",
+            "name": "Joint Task Force, Interagency Working Group",
+            "email-addresses": [
+                "sec-cert@nist.gov"
+            ],
+            "addresses": [
+                {
+                    "addr-lines": [
+                        "National Institute of Standards and Technology",
+                        "Attn: Computer Security Division",
+                        "Information Technology Laboratory",
+                        "100 Bureau Drive (Mail Stop 8930)"
+                    ],
+                    "city": "Gaithersburg",
+                    "state": "MD",
+                    "postal-code": "20899-8930"
+                }
+            ]
+        }
+    ],
+    "responsible-parties": [
+        {
+            "role-id": "creator",
+            "party-uuids": [
+                "41a93829-b76b-43ec-b9e7-250553511549"
+            ]
+        },
+        {
+            "role-id": "contact",
+            "party-uuids": [
+                "41a93829-b76b-43ec-b9e7-250553511549"
+            ]
+        }
+    ]
+}
