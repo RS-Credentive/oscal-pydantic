@@ -174,7 +174,7 @@ class OscalModel(BaseModel):
                         field_object.model_dump()
                     )
                     return typed_object
-                except Exception as e:
+                except Exception:
                     pass
             else:
                 raise Exception(
