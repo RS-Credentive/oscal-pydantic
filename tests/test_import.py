@@ -1,5 +1,6 @@
 from oscal_pydantic import document, catalog
 from pathlib import Path
+import pytest
 
 RESOURCES_PATH = Path(__file__).parent.joinpath("resources")
 
@@ -14,6 +15,15 @@ class TestImport:
             catalog.StatementItemPart.model_validate(test_part.model_dump()),
             catalog.StatementItemPart,
         )
+
+    def test_import_invalid_nested_part(self):
+        with open(
+            RESOURCES_PATH.joinpath(Path("invalid_nested_part.json"))
+        ) as part_file:
+            part_bytes = part_file.read()
+
+        with pytest.raises(ValueError):
+            catalog.StatementItemPart.model_validate_json(part_bytes)
 
     def test_import_statement_part(self):
         with open(RESOURCES_PATH.joinpath(Path("statement_part.json"))) as part_file:

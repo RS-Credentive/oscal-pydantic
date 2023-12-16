@@ -66,7 +66,7 @@ class Select(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "how_many": [
@@ -75,7 +75,7 @@ class Select(base.OscalModel):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
@@ -165,8 +165,8 @@ class Parameter(base.OscalModel):
         return depends_on
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [
+    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = [
             {
                 "props": [
                     properties.OscalParameterProperty,
@@ -174,7 +174,7 @@ class Parameter(base.OscalModel):
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
@@ -248,7 +248,7 @@ class BasePart(base.OscalModel):
 
 class OscalPart(BasePart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
@@ -256,13 +256,13 @@ class OscalPart(BasePart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class StatementPart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -270,19 +270,25 @@ class StatementPart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [StatementItemPart]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = [
+            {
+                "parts": [
+                    StatementItemPart,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
 class StatementItemPart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -290,19 +296,25 @@ class StatementItemPart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [StatementItemPart]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = [
+            {
+                "parts": [
+                    StatementItemPart,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
 class GuidancePart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -310,13 +322,13 @@ class GuidancePart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class AssessmentObjectivePart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -325,7 +337,7 @@ class AssessmentObjectivePart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @field_validator("name", mode="after")
@@ -340,15 +352,21 @@ class AssessmentObjectivePart(OscalPart):
         return name
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [AssessmentObjectivePart]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = [
+            {
+                "parts": [
+                    AssessmentObjectivePart,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
 class AssesmentMethodPart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -357,7 +375,7 @@ class AssesmentMethodPart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @field_validator("name", mode="after")
@@ -372,18 +390,26 @@ class AssesmentMethodPart(OscalPart):
         return name
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [
-            {"parts": [AssessmentObjectPart]},
-            {"props": [properties.OscalAssessmentMethodProperty]},
+    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
+        allowed_subfield_types: list[AllowedFieldTypes] = [
+            {
+                "parts": [
+                    AssessmentObjectPart,
+                ]
+            },
+            {
+                "props": [
+                    properties.OscalAssessmentMethodProperty,
+                ]
+            },
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
 class AssessmentObjectPart(OscalPart):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -392,13 +418,13 @@ class AssessmentObjectPart(OscalPart):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class ControlLink(common.Link):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "rel": [
@@ -410,7 +436,7 @@ class ControlLink(common.Link):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 

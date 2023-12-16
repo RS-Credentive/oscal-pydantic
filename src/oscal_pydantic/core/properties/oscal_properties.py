@@ -11,19 +11,19 @@ import warnings
 
 class OscalBaseProperty(BaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalMarkingProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -31,13 +31,13 @@ class OscalMarkingProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalLocationProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [datatypes.OscalToken("type")],
@@ -48,13 +48,13 @@ class OscalLocationProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalPartyProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -64,13 +64,13 @@ class OscalPartyProperty(OscalBaseProperty):
                 ],
             }
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalResourceProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -114,7 +114,7 @@ class OscalResourceProperty(OscalBaseProperty):
                 ]
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @model_validator(mode="after")
@@ -134,7 +134,7 @@ class OscalResourceProperty(OscalBaseProperty):
 
 class OscalParameterProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -145,13 +145,13 @@ class OscalParameterProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalPartProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -161,13 +161,13 @@ class OscalPartProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalControlProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -186,7 +186,7 @@ class OscalControlProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @field_validator("value", mode="after")
@@ -203,7 +203,7 @@ class OscalControlProperty(OscalBaseProperty):
 
 class OscalMetadataProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -211,13 +211,13 @@ class OscalMetadataProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalAssessmentMethodProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -230,13 +230,13 @@ class OscalAssessmentMethodProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class OscalGroupProperty(OscalBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -245,5 +245,5 @@ class OscalGroupProperty(OscalBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
