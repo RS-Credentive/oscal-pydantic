@@ -214,11 +214,7 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
-    props: list[
-        properties.OscalPartProperty
-        | properties.OscalAssessmentMethodProperty
-        | properties.RmfAssessmentMethodProperty
-    ] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a namespace 
             qualified name/value pair.
@@ -244,6 +240,20 @@ class BasePart(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types: list[base.AllowedFieldTypes] = [
+            {
+                "props": [
+                    properties.OscalPartProperty,
+                    properties.OscalAssessmentMethodProperty,
+                    properties.RmfAssessmentMethodProperty,
+                ],
+            },
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class OscalPart(BasePart):
@@ -275,7 +285,13 @@ class StatementPart(OscalPart):
 
     @classmethod
     def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [StatementItemPart]}]
+        allowed_subfield_types = [
+            {
+                "parts": [
+                    StatementItemPart,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
@@ -295,7 +311,13 @@ class StatementItemPart(OscalPart):
 
     @classmethod
     def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [StatementItemPart]}]
+        allowed_subfield_types = [
+            {
+                "parts": [
+                    StatementItemPart,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
@@ -341,7 +363,13 @@ class AssessmentObjectivePart(OscalPart):
 
     @classmethod
     def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [{"parts": [AssessmentObjectivePart]}]
+        allowed_subfield_types = [
+            {
+                "parts": [
+                    AssessmentObjectivePart,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
@@ -374,8 +402,16 @@ class AssesmentMethodPart(OscalPart):
     @classmethod
     def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
         allowed_subfield_types = [
-            {"parts": [AssessmentObjectPart]},
-            {"props": [properties.OscalAssessmentMethodProperty]},
+            {
+                "parts": [
+                    AssessmentObjectPart,
+                ]
+            },
+            {
+                "props": [
+                    properties.OscalAssessmentMethodProperty,
+                ]
+            },
         ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
@@ -496,9 +532,7 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
-    props: list[
-        properties.OscalControlProperty | properties.OscalGroupProperty
-    ] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -530,6 +564,19 @@ class Group(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types: list[base.AllowedFieldTypes] = [
+            {
+                "props": [
+                    properties.OscalControlProperty,
+                    properties.OscalGroupProperty,
+                ],
+            },
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class Catalog(base.OscalModel):
