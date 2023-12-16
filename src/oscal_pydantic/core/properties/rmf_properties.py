@@ -7,7 +7,7 @@ from .base_property import BaseProperty
 
 class RmfBaseProperty(BaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
@@ -15,13 +15,13 @@ class RmfBaseProperty(BaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class RmfParameterProperty(RmfBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -29,13 +29,13 @@ class RmfParameterProperty(RmfBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
 class RmfAssessmentMethodProperty(RmfBaseProperty):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
@@ -48,5 +48,5 @@ class RmfAssessmentMethodProperty(RmfBaseProperty):
                 ],
             },
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values

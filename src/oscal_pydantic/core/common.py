@@ -52,7 +52,7 @@ class Link(base.OscalModel):
 
 class RevisionLink(Link):
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "rel": [
@@ -64,7 +64,7 @@ class RevisionLink(Link):
                 ],
             }
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
 
@@ -229,9 +229,9 @@ class Role(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
         allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
@@ -407,9 +407,9 @@ class Location(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
         allowed_subfield_types = [{"props": [properties.OscalLocationProperty]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
@@ -594,9 +594,9 @@ class ResponsibleParty(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
         allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
@@ -651,7 +651,7 @@ class Action(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_values(cls) -> list[base.AllowedValue]:
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
                 "system": [
@@ -663,13 +663,13 @@ class Action(base.OscalModel):
                 ],
             }
         ]
-        allowed_values.extend(super().get_allowed_values())
+        allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
         allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
@@ -1052,7 +1052,7 @@ class Resource(base.OscalModel):
         return self
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
         allowed_subfield_types = [
             {
                 "props": [
@@ -1061,7 +1061,7 @@ class Resource(base.OscalModel):
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        allowed_subfield_types.extend(super().get_allowed_field_types())
         return allowed_subfield_types
 
 
