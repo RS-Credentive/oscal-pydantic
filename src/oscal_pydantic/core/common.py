@@ -113,7 +113,7 @@ class Revision(base.OscalModel):
             The OSCAL model version the document was authored against.
         """,
     )
-    props: list[properties.OscalMarkingProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             Properties permit the deployment and management of arbitrary controlled values, 
             within OSCAL objects. A property can be included for any purpose useful to an 
@@ -141,6 +141,18 @@ class Revision(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_subfield_types = [
+            {
+                "props": [
+                    properties.OscalMarkingProperty,
+                ]
+            }
+        ]
+        allowed_subfield_types.extend(super().get_allowed_subfield_types())
+        return allowed_subfield_types
 
 
 class DocumentID(base.OscalModel):
@@ -279,7 +291,7 @@ class TelephoneNumber(base.OscalModel):
         number (datatype.String): the phone number
     """
 
-    type: typing.Literal["home", "office", "mobile"] | None = Field(
+    type: datatypes.OscalString | None = Field(
         description="""
                 Indicates the type of phone number. 
 
@@ -297,6 +309,20 @@ class TelephoneNumber(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "ns": [
+                    datatypes.OscalString("home"),
+                    datatypes.OscalString("office"),
+                    datatypes.OscalString("mobile"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
 
 
 class Location(base.OscalModel):
@@ -427,7 +453,7 @@ class Party(base.OscalModel):
         """,
         default=None,
     )
-    type: typing.Literal["person", "organization"] | None = Field(
+    type: datatypes.OscalString | None = Field(
         description="""
             A category describing the kind of party the object describes.
 
@@ -510,8 +536,27 @@ class Party(base.OscalModel):
     )
 
     @classmethod
+    def get_allowed_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "type": [
+                    datatypes.OscalString("person"),
+                    datatypes.OscalString("organization"),
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_values())
+        return allowed_values
+
+    @classmethod
     def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
-        allowed_subfield_types = [{"props": [properties.OscalPartyProperty]}]
+        allowed_subfield_types: list[base.AllowedFieldTypes] = [
+            {
+                "props": [
+                    properties.OscalPartyProperty,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
@@ -748,7 +793,13 @@ class Metadata(base.OscalModel):
 
     @classmethod
     def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
-        allowed_subfield_types = [{"props": [properties.OscalMetadataProperty]}]
+        allowed_subfield_types = [
+            {
+                "props": [
+                    properties.OscalMetadataProperty,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
@@ -776,7 +827,13 @@ class Citation(base.OscalModel):
 
     @classmethod
     def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
-        allowed_subfield_types = [{"props": [properties.OscalMarkingProperty]}]
+        allowed_subfield_types = [
+            {
+                "props": [
+                    properties.OscalMarkingProperty,
+                ]
+            }
+        ]
         allowed_subfield_types.extend(super().get_allowed_subfield_types())
         return allowed_subfield_types
 
