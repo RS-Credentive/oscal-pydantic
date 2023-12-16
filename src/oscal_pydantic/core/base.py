@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from typing import TYPE_CHECKING, NamedTuple, Literal, TypeAlias, Any, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, Any, TypeVar
 
 
 from . import datatypes
