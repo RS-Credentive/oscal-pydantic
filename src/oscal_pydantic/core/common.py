@@ -9,8 +9,6 @@ from datetime import datetime, timezone
 from collections import Counter
 import re
 
-import typing
-
 from . import base, datatypes, properties
 
 from pydantic import (
