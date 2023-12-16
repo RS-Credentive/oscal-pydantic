@@ -18,18 +18,6 @@ if TYPE_CHECKING:
     from pydantic.main import IncEx
 
 
-# To help with error reporting, we create a NamedTuple of the field, and the invalid value
-class FieldError(NamedTuple):
-    field: str
-    expected_value: datatypes.OscalDatatype
-
-
-class FieldStatus(NamedTuple):
-    field: str
-    status: Literal["match", "unchecked", "error"]
-    error: FieldError | None
-
-
 # Helper function to convert python_variable_name to json-attribute-name
 def oscal_aliases(string: str) -> str:
     wordlist = string.split("_")
