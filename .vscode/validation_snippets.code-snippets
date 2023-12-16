@@ -1,0 +1,55 @@
+{
+	// Place your oscal-pydantic workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+
+
+	"get_allowed_values": {
+		"scope": "python",
+		"prefix": "allowed_values, get_allowed_values",
+		"body": [
+			"@classmethod",
+			"def get_allowed_values(cls) -> list[base.AllowedValue]:",
+			"\tallowed_values: list[base.AllowedValue] = [",
+			"\t\t{",
+			"\t\t\t\"${0:field}\": [${1:type}(\"${2:value}\")],",
+			"\t\t},",
+			"\t]",
+			"\tallowed_values.extend(super().get_allowed_values())",
+			"\treturn allowed_values"
+		]
+	}
+
+	"get_allowed_types": {
+		"scope": "python",
+		"prefix": "allowed_types, get_allowed_types",
+		"body": [
+			"@classmethod",
+			"def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:",
+			"\tallowed_subfield_types: list[base.AllowedFieldTypes] = [",
+			"\t\t{",
+			"\t\t\t\"${1:field}\": [",
+			"\t\t\t\t${2:type}",
+			"\t\t\t],",
+			"\t\t},",
+			"\t]",
+			"\tallowed_subfield_types.extend(super().get_allowed_subfield_types())",
+			"\treturn allowed_subfield_types"
+		]
+	}
+  
+
+}
