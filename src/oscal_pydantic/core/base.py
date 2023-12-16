@@ -301,7 +301,6 @@ class OscalModel(BaseModel):
         # Otherwise they have not.
         return dict.fromkeys(restricted_fields, False)
 
-    # NEW VALIDATOR CODE
     @model_validator(mode="after")
     def validate_restricted_fields(self) -> OscalModel:
         # Get value restrictions on fields. If there are any, check them.
