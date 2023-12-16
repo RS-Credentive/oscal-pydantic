@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from oscal_pydantic.core.base import AllowedFieldTypes
-
 from .core import base, common, datatypes, properties
 
 from pydantic import Field, field_validator, AnyUrl
@@ -165,8 +163,8 @@ class Parameter(base.OscalModel):
         return depends_on
 
     @classmethod
-    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types: list[AllowedFieldTypes] = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "props": [
                     properties.OscalParameterProperty,
@@ -174,8 +172,8 @@ class Parameter(base.OscalModel):
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_field_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class BasePart(base.OscalModel):
@@ -242,8 +240,8 @@ class BasePart(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
-        allowed_subfield_types: list[base.AllowedFieldTypes] = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "props": [
                     properties.OscalPartProperty,
@@ -252,8 +250,8 @@ class BasePart(base.OscalModel):
                 ],
             },
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class OscalPart(BasePart):
@@ -284,17 +282,16 @@ class StatementPart(OscalPart):
         return allowed_values
 
     @classmethod
-    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types: list[AllowedFieldTypes] = [
-
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "parts": [
                     StatementItemPart,
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class StatementItemPart(OscalPart):
@@ -311,16 +308,16 @@ class StatementItemPart(OscalPart):
         return allowed_values
 
     @classmethod
-    def get_allowed_field_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types: list[AllowedFieldTypes] = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "parts": [
                     StatementItemPart,
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class GuidancePart(OscalPart):
@@ -363,16 +360,16 @@ class AssessmentObjectivePart(OscalPart):
         return name
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "parts": [
                     AssessmentObjectivePart,
                 ]
             }
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class AssesmentMethodPart(OscalPart):
@@ -401,8 +398,8 @@ class AssesmentMethodPart(OscalPart):
         return name
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[AllowedFieldTypes]:
-        allowed_subfield_types = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "parts": [
                     AssessmentObjectPart,
@@ -414,8 +411,8 @@ class AssesmentMethodPart(OscalPart):
                 ]
             },
         ]
-        allowed_subfield_types.extend(super().get_allowed_field_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class AssessmentObjectPart(OscalPart):
@@ -567,8 +564,8 @@ class Group(base.OscalModel):
     )
 
     @classmethod
-    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
-        allowed_subfield_types: list[base.AllowedFieldTypes] = [
+    def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
             {
                 "props": [
                     properties.OscalControlProperty,
@@ -576,8 +573,8 @@ class Group(base.OscalModel):
                 ],
             },
         ]
-        allowed_subfield_types.extend(super().get_allowed_subfield_types())
-        return allowed_subfield_types
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class Catalog(base.OscalModel):
