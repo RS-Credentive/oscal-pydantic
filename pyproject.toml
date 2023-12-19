@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "oscal-pydantic"
+name = "oscal-pydantic-v2"
 version = "2023.3.21"
 description = "A set of Pydantic models generated from the OSCAL specification."
 readme = "README.md"
@@ -11,7 +11,15 @@ authors = [
     { name = "Robert Sherwood", email = "robert.sherwood@credentive.com" },
 ]
 license = { file = "LICENSE" }
-dependencies = ["pydantic"]
+dependencies = [
+    "annotated-types",
+    "dnspython>=2.3",
+    "email-validator>=2",
+    "idna>=3.4",
+    "pydantic>=2",
+    "pydantic_core>=2",
+    "typing_extensions",
+]
 keywords = ["oscal", "OSCAL", "pydantic"]
 requires-python = ">=3.10"
 
