@@ -13,3 +13,4 @@ dist/
 eggs/
 lib/
 lib64/
+*.egg-info/
