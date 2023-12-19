@@ -475,7 +475,7 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
-    props: list[properties.OscalControlProperty] | None = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair.
@@ -503,6 +503,18 @@ class Control(base.OscalModel):
         """,
         default=None,
     )
+
+    @classmethod
+    def get_allowed_subfield_types(cls) -> list[base.AllowedFieldTypes]:
+        allowed_field_types: list[base.AllowedFieldTypes] = [
+            {
+                "props": [
+                    properties.OscalControlProperty,
+                ],
+            },
+        ]
+        allowed_field_types.extend(super().get_allowed_field_types())
+        return allowed_field_types
 
 
 class Group(base.OscalModel):
