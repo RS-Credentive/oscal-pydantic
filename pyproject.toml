@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oscal-pydantic-v2"
-version = "2023.3.21"
+version = "2023.12.19"
 description = "A set of Pydantic models generated from the OSCAL specification."
 readme = "README.md"
 authors = [
