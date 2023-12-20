@@ -1,0 +1,29 @@
+digraph "packages" {
+rankdir=BT
+charset="utf-8"
+"oscal_pydantic" [color="black", label=<oscal_pydantic>, shape="box", style="solid"];
+"oscal_pydantic.catalog" [color="black", label=<oscal_pydantic.catalog>, shape="box", style="solid"];
+"oscal_pydantic.core" [color="black", label=<oscal_pydantic.core>, shape="box", style="solid"];
+"oscal_pydantic.core.base" [color="black", label=<oscal_pydantic.core.base>, shape="box", style="solid"];
+"oscal_pydantic.core.common" [color="black", label=<oscal_pydantic.core.common>, shape="box", style="solid"];
+"oscal_pydantic.core.datatypes" [color="black", label=<oscal_pydantic.core.datatypes>, shape="box", style="solid"];
+"oscal_pydantic.core.decorators" [color="black", label=<oscal_pydantic.core.decorators>, shape="box", style="solid"];
+"oscal_pydantic.core.properties" [color="black", label=<oscal_pydantic.core.properties>, shape="box", style="solid"];
+"oscal_pydantic.core.properties.base_property" [color="black", label=<oscal_pydantic.core.properties.base_property>, shape="box", style="solid"];
+"oscal_pydantic.core.properties.oscal_properties" [color="black", label=<oscal_pydantic.core.properties.oscal_properties>, shape="box", style="solid"];
+"oscal_pydantic.core.properties.rmf_properties" [color="black", label=<oscal_pydantic.core.properties.rmf_properties>, shape="box", style="solid"];
+"oscal_pydantic.document" [color="black", label=<oscal_pydantic.document>, shape="box", style="solid"];
+"oscal_pydantic.catalog" -> "oscal_pydantic.core" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.catalog" -> "oscal_pydantic.core.base" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.catalog" -> "oscal_pydantic.core.common" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.catalog" -> "oscal_pydantic.core.datatypes" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.catalog" -> "oscal_pydantic.core.properties" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.core.properties" -> "oscal_pydantic.core.properties.base_property" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.core.properties" -> "oscal_pydantic.core.properties.oscal_properties" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.core.properties" -> "oscal_pydantic.core.properties.rmf_properties" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.core.properties.oscal_properties" -> "oscal_pydantic.core.properties.base_property" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.core.properties.rmf_properties" -> "oscal_pydantic.core.properties.base_property" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.document" -> "oscal_pydantic.catalog" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.document" -> "oscal_pydantic.core" [arrowhead="open", arrowtail="none"];
+"oscal_pydantic.document" -> "oscal_pydantic.core.base" [arrowhead="open", arrowtail="none"];
+}
