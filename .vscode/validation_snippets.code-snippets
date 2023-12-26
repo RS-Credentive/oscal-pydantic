@@ -19,23 +19,23 @@
 
 	"get_allowed_values": {
 		"scope": "python",
-		"prefix": "allowed_values, get_allowed_values",
+		"prefix": "allowed_values",
 		"body": [
 			"@classmethod",
-			"def get_allowed_values(cls) -> list[base.AllowedValue]:",
+			"def get_allowed_field_values(cls) -> list[base.AllowedValue]:",
 			"\tallowed_values: list[base.AllowedValue] = [",
 			"\t\t{",
 			"\t\t\t\"${1:field}\": [${2:type}(\"${3:value}\")],",
 			"\t\t},",
 			"\t]",
-			"\tallowed_values.extend(super().get_allowed_values())",
+			"\tallowed_values.extend(super().get_allowed_field_values())",
 			"\treturn allowed_values"
 		]
 	}
 
 	"get_allowed_types": {
 		"scope": "python",
-		"prefix": "allowed_types, get_allowed_types",
+		"prefix": "allowed_types",
 		"body": [
 			"@classmethod",
 			"def get_allowed_field_types(cls) -> list[base.AllowedFieldTypes]:",
