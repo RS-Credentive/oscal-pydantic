@@ -193,9 +193,9 @@ class OscalControlProperty(OscalBaseProperty):
     @classmethod
     def capitalized_withdrawn_deprecated(cls, value: str) -> datatypes.OscalToken:
         # raise a deprecationwarning if value is capitalized
-        if type(value) == str and value == "Warning":
+        if type(value) == str and value == "Withdrawn":
             warnings.warn(
-                "'Warning' is a deprecated property value for Control. Use 'warning' instead",
+                "'Withdrawn' is a deprecated property value for Control. Use 'withdrawn' instead",
                 DeprecationWarning,
             )
         return value
