@@ -641,7 +641,7 @@ class Action(base.OscalModel):
             Specifies the action type system used.
         """
     )
-    props: list[properties.BaseProperty] = Field(
+    props: list[properties.BaseProperty] | None = Field(
         description="""
             An attribute, characteristic, or quality of the containing object expressed as a 
             namespace qualified name/value pair. The value of a property is a simple scalar value,
