@@ -14,3 +14,5 @@ eggs/
 lib/
 lib64/
 *.egg-info/
+pyvenv.cfg
+lib64

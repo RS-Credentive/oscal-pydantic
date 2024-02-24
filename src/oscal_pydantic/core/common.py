@@ -106,10 +106,11 @@ class Revision(base.OscalModel):
             previous (and future) versions.
         """,
     )
-    oscal_version: datatypes.OscalString = Field(
+    oscal_version: datatypes.OscalString | None = Field(
         description="""
             The OSCAL model version the document was authored against.
         """,
+        default=None,
     )
     props: list[properties.BaseProperty] | None = Field(
         description="""
