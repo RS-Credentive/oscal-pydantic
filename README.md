@@ -7,19 +7,15 @@ Several Python projects include data models, but importing a large project just 
 
 ## Installation
 
-Package coming!
+pip install oscal-pydantic-v2
 
 ## Usage
+
+
 
 To import a specific model, include it in your python file:
 
 e.g.: from oscal_pydantic import catalog
-
-Alternatively, you can import the complete OSCAL schema:
-
-from oscal_pydantic import complete
-
-After importing, you should be able to define OSCAL objects that support pydantic's rich validation rules.
 
 ## License
 
