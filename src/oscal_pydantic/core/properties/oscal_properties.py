@@ -3,6 +3,7 @@ from __future__ import annotations
 from .. import base, datatypes
 
 from .base_property import BaseProperty
+from typing import Self
 
 from pydantic import field_validator, model_validator
 
@@ -14,7 +15,7 @@ class OscalBaseProperty(BaseProperty):
     def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
-                "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
+                "ns": ["http://csrc.nist.gov/ns/oscal"],
             },
         ]
         allowed_values.extend(super().get_allowed_field_values())
@@ -27,7 +28,7 @@ class OscalMarkingProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("marking"),
+                    "marking",
                 ],
             },
         ]
@@ -40,11 +41,11 @@ class OscalLocationProperty(OscalBaseProperty):
     def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
-                "name": [datatypes.OscalToken("type")],
-                "value": [datatypes.OscalString("data-center")],
+                "name": ["type"],
+                "value": ["data-center"],
                 "prop_class": [
-                    datatypes.OscalToken("primary"),
-                    datatypes.OscalToken("alternate"),
+                    "primary",
+                    "alternate",
                 ],
             },
         ]
@@ -58,9 +59,9 @@ class OscalPartyProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("mail-stop"),
-                    datatypes.OscalToken("office"),
-                    datatypes.OscalToken("job-title"),
+                    "mail-stop",
+                    "office",
+                    "job-title",
                 ],
             }
         ]
@@ -74,43 +75,43 @@ class OscalResourceProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("version"),
+                    "version",
                 ],
             },
             {
                 "name": [
-                    datatypes.OscalToken("type"),
+                    "type",
                 ],
                 "value": [
-                    datatypes.OscalString("logo"),
-                    datatypes.OscalString("image"),
-                    datatypes.OscalString("screen-shot"),
-                    datatypes.OscalString("law"),
-                    datatypes.OscalString("regulation"),
-                    datatypes.OscalString("standard"),
-                    datatypes.OscalString("external-guidance"),
-                    datatypes.OscalString("acronyms"),
-                    datatypes.OscalString("citation"),
-                    datatypes.OscalString("policy"),
-                    datatypes.OscalString("procedure"),
-                    datatypes.OscalString("system-guide"),
-                    datatypes.OscalString("users-guide"),
-                    datatypes.OscalString("administrators-guide"),
-                    datatypes.OscalString("rules-of-behavior"),
-                    datatypes.OscalString("plan"),
-                    datatypes.OscalString("artifact"),
-                    datatypes.OscalString("evidence"),
-                    datatypes.OscalString("tool-output"),
-                    datatypes.OscalString("raw-data"),
-                    datatypes.OscalString("interview-notes"),
-                    datatypes.OscalString("questionnaire"),
-                    datatypes.OscalString("report"),
-                    datatypes.OscalString("agreement"),
+                    "logo",
+                    "image",
+                    "screen-shot",
+                    "law",
+                    "regulation",
+                    "standard",
+                    "external-guidance",
+                    "acronyms",
+                    "citation",
+                    "policy",
+                    "procedure",
+                    "system-guide",
+                    "users-guide",
+                    "administrators-guide",
+                    "rules-of-behavior",
+                    "plan",
+                    "artifact",
+                    "evidence",
+                    "tool-output",
+                    "raw-data",
+                    "interview-notes",
+                    "questionnaire",
+                    "report",
+                    "agreement",
                 ],
             },
             {
                 "name": [
-                    datatypes.OscalString("published"),
+                    "published",
                 ]
             },
         ]
@@ -118,13 +119,13 @@ class OscalResourceProperty(OscalBaseProperty):
         return allowed_values
 
     @model_validator(mode="after")
-    def validate_publication_date(self) -> OscalResourceProperty:
+    def validate_publication_date(self) -> Self:
         # for prop[has-oscal-namespace('http://csrc.nist.gov/ns/oscal') and
         # @name='published']/@value:
         # the target value must match the lexical form of the 'dateTime-with-timezone' data type.
         if self.name == "published":
             try:
-                datatypes.OscalDateTimeWithTimezone(self.value)
+                self.value
             except ValueError:
                 raise ValueError(
                     "Value of property in resource with name 'published' must match 'OscalDateTimeWithTimezone' format"
@@ -138,10 +139,10 @@ class OscalParameterProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("label"),
-                    datatypes.OscalToken("sort-id"),
-                    datatypes.OscalToken("alt-identifier"),
-                    datatypes.OscalToken("alt-label"),
+                    "label",
+                    "sort-id",
+                    "alt-identifier",
+                    "alt-label",
                 ],
             },
         ]
@@ -155,9 +156,9 @@ class OscalPartProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("label"),
-                    datatypes.OscalToken("sort-id"),
-                    datatypes.OscalToken("alt-identifier"),
+                    "label",
+                    "sort-id",
+                    "alt-identifier",
                 ],
             },
         ]
@@ -171,18 +172,18 @@ class OscalControlProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("label"),
-                    datatypes.OscalToken("sort-id"),
-                    datatypes.OscalToken("alt-identifier"),
+                    "label",
+                    "sort-id",
+                    "alt-identifier",
                 ],
             },
             {
                 "name": [
-                    datatypes.OscalToken("status"),
+                    "status",
                 ],
                 "value": [
-                    datatypes.OscalToken("Withdrawn"),  # deprecated
-                    datatypes.OscalToken("withdrawn"),
+                    "Withdrawn",  # deprecated
+                    "withdrawn",
                 ],
             },
         ]
@@ -207,7 +208,7 @@ class OscalMetadataProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("keywords"),
+                    "keywords",
                 ],
             },
         ]
@@ -221,12 +222,12 @@ class OscalAssessmentMethodProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("method"),
+                    "method",
                 ],
                 "value": [
-                    datatypes.OscalToken("INTERVIEW"),
-                    datatypes.OscalToken("EXAMINE"),
-                    datatypes.OscalToken("TEST"),
+                    "INTERVIEW",
+                    "EXAMINE",
+                    "TEST",
                 ],
             },
         ]
@@ -240,8 +241,8 @@ class OscalGroupProperty(OscalBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("overview"),
-                    datatypes.OscalToken("instruction"),
+                    "overview",
+                    "instruction",
                 ],
             },
         ]

@@ -8,6 +8,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from collections import Counter
 import re
+from typing import Self
 
 from . import base, datatypes, properties
 
@@ -56,11 +57,11 @@ class RevisionLink(Link):
         allowed_field_values: list[base.AllowedValue] = [
             {
                 "rel": [
-                    datatypes.OscalToken("canonical"),
-                    datatypes.OscalToken("alternate"),
-                    datatypes.OscalToken("predecessor-version"),
-                    datatypes.OscalToken("successor-version"),
-                    datatypes.OscalToken("version-history"),
+                    "canonical",
+                    "alternate",
+                    "predecessor-version",
+                    "successor-version",
+                    "version-history",
                 ],
             }
         ]
@@ -282,7 +283,7 @@ class Address(base.OscalModel):
 
     # TODO: This should be a field validator
     @model_validator(mode="after")
-    def two_letter_country_code(self) -> Address:
+    def two_letter_country_code(self) -> Self:
         if self.country is not None and re.match("[A-Z]{2}", self.country) == None:
             raise ValueError("country string must have 2 letters")
         return self
@@ -320,9 +321,9 @@ class TelephoneNumber(base.OscalModel):
         allowed_field_values: list[base.AllowedValue] = [
             {
                 "ns": [
-                    datatypes.OscalString("home"),
-                    datatypes.OscalString("office"),
-                    datatypes.OscalString("mobile"),
+                    "home",
+                    "office",
+                    "mobile",
                 ],
             },
         ]
@@ -551,8 +552,8 @@ class Party(base.OscalModel):
         allowed_field_values: list[base.AllowedValue] = [
             {
                 "type": [
-                    datatypes.OscalString("person"),
-                    datatypes.OscalString("organization"),
+                    "person",
+                    "organization",
                 ],
             },
         ]
@@ -677,8 +678,8 @@ class Action(base.OscalModel):
                     datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
                 ],
                 "type": [
-                    datatypes.OscalToken("approval"),
-                    datatypes.OscalToken("request-changes"),
+                    "approval",
+                    "request-changes",
                 ],
             }
         ]
@@ -797,7 +798,7 @@ class Metadata(base.OscalModel):
     )
 
     @model_validator(mode="after")
-    def validate_metadata(self) -> Metadata:
+    def validate_metadata(self) -> Self:
         # Check that the every role-id and party-id provided in responsible-party corresponds to a defined role or party respectively
         if self.responsible_parties is not None:
             if self.parties is None or self.roles is None:
@@ -907,7 +908,7 @@ class Hash(base.OscalModel):
             return False
 
     @model_validator(mode="after")
-    def validate_hash_for_algorithm(self) -> Hash:
+    def validate_hash_for_algorithm(self) -> Self:
         if self.algorithm is None and self.value is None:
             # No value and no algorithm is okay
             return self
@@ -1059,7 +1060,7 @@ class Resource(base.OscalModel):
     )
 
     @model_validator(mode="after")
-    def unique_rlink(self) -> Resource:
+    def unique_rlink(self) -> Self:
         if self.rlinks is not None:
             links_counter = Counter([rlink.href for rlink in self.rlinks])
             duplicates = [item for item, count in links_counter.items() if count > 1]
@@ -1068,7 +1069,7 @@ class Resource(base.OscalModel):
         return self
 
     @model_validator(mode="after")
-    def unique_base64(self) -> Resource:
+    def unique_base64(self) -> Self:
         if self.base64 is not None:
             b64_counter = Counter([b64.value for b64 in self.base64])
             duplicates = [item for item, count in b64_counter.items() if count > 1]

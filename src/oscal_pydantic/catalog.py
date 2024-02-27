@@ -54,7 +54,7 @@ class Select(base.OscalModel):
             Describes the number of selections that must occur. Without this setting, only 
             one value should be assumed to be permitted.
         """,
-        default=datatypes.OscalToken("one"),
+        default="one",
     )
     choice: list[datatypes.OscalMarkupLine] | None = Field(
         description="""
@@ -68,8 +68,8 @@ class Select(base.OscalModel):
         allowed_values: list[base.AllowedValue] = [
             {
                 "how_many": [
-                    datatypes.OscalToken("one"),
-                    datatypes.OscalToken("one-or-more"),
+                    "one",
+                    "one-or-more",
                 ],
             },
         ]
@@ -260,7 +260,7 @@ class OscalPart(BasePart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
-                    datatypes.OscalUri("http://csrc.nist.gov/ns/oscal"),
+                    "http://csrc.nist.gov/ns/oscal",
                 ],
             },
         ]
@@ -274,7 +274,7 @@ class StatementPart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("statement"),
+                    "statement",
                 ],
             },
         ]
@@ -300,7 +300,7 @@ class StatementItemPart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("item"),
+                    "item",
                 ],
             },
         ]
@@ -326,7 +326,7 @@ class GuidancePart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("guidance"),
+                    "guidance",
                 ],
             },
         ]
@@ -340,8 +340,8 @@ class AssessmentObjectivePart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("assessment-objective"),
-                    datatypes.OscalToken("objective"),  # TODO: Deprecated
+                    "assessment-objective",
+                    "objective",  # TODO: Deprecated
                 ],
             },
         ]
@@ -352,7 +352,7 @@ class AssessmentObjectivePart(OscalPart):
     @classmethod
     def assessment_deprecated(cls, name: datatypes.OscalToken) -> datatypes.OscalToken:
         # raise a deprecationwarning if name is 'assessment'
-        if name == datatypes.OscalToken("objective"):
+        if name == "objective":
             warnings.warn(
                 "'objective' is a deprecated property value for name. Use 'assessment-objective' instead",
                 DeprecationWarning,
@@ -378,8 +378,8 @@ class AssesmentMethodPart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("assessment"),
-                    datatypes.OscalToken("assessment-method"),
+                    "assessment",
+                    "assessment-method",
                 ],
             },
         ]
@@ -390,7 +390,7 @@ class AssesmentMethodPart(OscalPart):
     @classmethod
     def assessment_deprecated(cls, name: datatypes.OscalToken) -> datatypes.OscalToken:
         # raise a deprecationwarning if name is 'assessment'
-        if name == datatypes.OscalToken("assessment"):
+        if name == "assessment":
             warnings.warn(
                 "'assessment' is a deprecated property value for name. Use 'assessment-method' instead",
                 DeprecationWarning,
@@ -421,8 +421,8 @@ class AssessmentObjectPart(OscalPart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("assessment-objects"),
-                    datatypes.OscalToken("objects"),  # TODO: Deprecated
+                    "assessment-objects",
+                    "objects",  # TODO: Deprecated
                 ],
             },
         ]
@@ -436,11 +436,11 @@ class ControlLink(common.Link):
         allowed_values: list[base.AllowedValue] = [
             {
                 "rel": [
-                    datatypes.OscalToken("reference"),
-                    datatypes.OscalToken("related"),
-                    datatypes.OscalToken("required"),
-                    datatypes.OscalToken("incorporated-into"),
-                    datatypes.OscalToken("moved-to"),
+                    "reference",
+                    "related",
+                    "required",
+                    "incorporated-into",
+                    "moved-to",
                 ],
             },
         ]

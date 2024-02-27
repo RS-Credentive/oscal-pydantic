@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias, Self
 
 
 from . import datatypes
@@ -130,11 +130,13 @@ class OscalModel(BaseModel):
                     for index, item in enumerate(field_object):
                         try:
                             if type(item) not in flattened_restricted_fields[field]:
-                                updated_fields[
-                                    index
-                                ] = OscalModel.set_field_to_precise_type(
-                                    field_object=item,
-                                    types_to_check=flattened_restricted_fields[field],
+                                updated_fields[index] = (
+                                    OscalModel.set_field_to_precise_type(
+                                        field_object=item,
+                                        types_to_check=flattened_restricted_fields[
+                                            field
+                                        ],
+                                    )
                                 )
                         except ValueError:
                             raise ValueError(
@@ -302,7 +304,7 @@ class OscalModel(BaseModel):
         return dict.fromkeys(restricted_fields, False)
 
     @model_validator(mode="after")
-    def validate_restricted_fields(self) -> OscalModel:
+    def validate_restricted_fields(self) -> Self:
         # Get value restrictions on fields. If there are any, check them.
         if len(self.__class__.get_allowed_field_values()) > 0:
             try:

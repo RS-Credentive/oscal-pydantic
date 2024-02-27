@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .. import base, datatypes
+from .. import base
 
 from .base_property import BaseProperty
 
@@ -11,7 +11,7 @@ class RmfBaseProperty(BaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
-                    datatypes.OscalUri("http://csrc.nist.gov/ns/rmf"),
+                    "http://csrc.nist.gov/ns/rmf",
                 ],
             },
         ]
@@ -25,7 +25,7 @@ class RmfParameterProperty(RmfBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("aggregates"),
+                    "aggregates",
                 ],
             },
         ]
@@ -39,12 +39,12 @@ class RmfAssessmentMethodProperty(RmfBaseProperty):
         allowed_values: list[base.AllowedValue] = [
             {
                 "name": [
-                    datatypes.OscalToken("method"),
+                    "method",
                 ],
                 "value": [
-                    datatypes.OscalToken("INTERVIEW"),
-                    datatypes.OscalToken("EXAMINE"),
-                    datatypes.OscalToken("TEST"),
+                    "INTERVIEW",
+                    "EXAMINE",
+                    "TEST",
                 ],
             },
         ]
