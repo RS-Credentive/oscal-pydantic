@@ -15,7 +15,7 @@ class OscalBaseProperty(BaseProperty):
     def get_allowed_field_values(cls) -> list[base.AllowedValue]:
         allowed_values: list[base.AllowedValue] = [
             {
-                "ns": ["http://csrc.nist.gov/ns/oscal"],
+                "ns": [datatypes.OscalUri("http://csrc.nist.gov/ns/oscal")],
             },
         ]
         allowed_values.extend(super().get_allowed_field_values())

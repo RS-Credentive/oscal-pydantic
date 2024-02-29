@@ -119,7 +119,7 @@ OscalIpV6Address = Annotated[
 
 OscalString = Annotated[
     str,
-    StringConstraints(pattern=r"\s.\S+"),
+    StringConstraints(pattern=r"\S.*\S"),
 ]
 
 OscalToken = Annotated[

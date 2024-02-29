@@ -260,7 +260,7 @@ class OscalPart(BasePart):
         allowed_values: list[base.AllowedValue] = [
             {
                 "ns": [
-                    "http://csrc.nist.gov/ns/oscal",
+                    AnyUrl("http://csrc.nist.gov/ns/oscal"),
                 ],
             },
         ]
