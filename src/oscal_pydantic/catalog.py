@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from oscal_pydantic.core.base import AllowedValue
+
 from .core import base, common, datatypes, properties
 
 from pydantic import Field, field_validator, AnyUrl
@@ -428,6 +430,20 @@ class AssessmentObjectPart(OscalPart):
         ]
         allowed_values.extend(super().get_allowed_field_values())
         return allowed_values
+    
+class GroupPart(OscalPart):
+    @classmethod
+    def get_allowed_field_values(cls) -> list[base.AllowedValue]:
+        allowed_values: list[base.AllowedValue] = [
+            {
+                "name": [
+                    "overview", 
+                    "instruction",
+                ],
+            },
+        ]
+        allowed_values.extend(super().get_allowed_field_values())
+        return allowed_values
 
 
 class ControlLink(common.Link):
@@ -583,6 +599,11 @@ class Group(base.OscalModel):
                     properties.OscalControlProperty,
                     properties.OscalGroupProperty,
                 ],
+            },
+            {
+                "parts": [
+                    GroupPart,
+                ]
             },
         ]
         allowed_field_types.extend(super().get_allowed_field_types())
