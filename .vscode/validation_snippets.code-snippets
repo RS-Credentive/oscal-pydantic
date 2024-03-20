@@ -31,7 +31,7 @@
 			"\tallowed_values.extend(super().get_allowed_field_values())",
 			"\treturn allowed_values"
 		]
-	}
+	},
 
 	"get_allowed_types": {
 		"scope": "python",
